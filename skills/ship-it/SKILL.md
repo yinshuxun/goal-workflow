@@ -91,20 +91,30 @@ gh pr merge --squash --delete-branch
 - `--merge`: 普通 merge commit
 - `--delete-branch`: 合入后删除远程分支
 
-### Step 5: 关闭 Issue（如未自动关闭）
+### Step 5: 添加实现总结评论
 
-如果 PR body 中已写 `Closes #N`，合入后 Issue 会自动关闭。否则手动关闭：
+PR 合入后，始终在 Issue 上添加实现总结评论，方便后续直接从 Issue 回溯代码变更。
 
 ```bash
-# 5a. 添加完成评论
 gh issue comment {issue-number} --body "$(cat <<'EOF'
 ## 实现总结
-- **核心变更**：说明
+- **核心变更**：{从 PR body 提取的实现摘要}
 - **PR**: #{pr-number}
+- **Commit**: {hash}
 EOF
 )"
+```
 
-# 5b. 关闭 Issue
+**关键规则：**
+- 无论是 auto-close 还是手动 close，都必须添加此评论
+- 评论内容从 PR body 的 Summary 部分提取，保持简洁（3-5 条 bullet）
+- 附加 PR 编号和 commit hash，方便直接跳转
+
+### Step 6: 手动关闭 Issue（仅当未自动关闭时）
+
+如果 PR body 中已写 `Closes #N`，合入后 Issue 会自动关闭，跳过此步。否则手动关闭：
+
+```bash
 gh issue close {issue-number} --reason completed
 ```
 
@@ -115,7 +125,7 @@ gh issue close {issue-number} --reason completed
 | `gh pr checks` 有失败项 | 查看失败原因，修复后追加 commit 推送 |
 | PR 有 merge conflict | `git fetch origin main && git rebase origin/main`，解决冲突后 force push |
 | `gh pr merge` 被 branch protection 阻止 | 确认 required reviews 已满足，或请 reviewer approve |
-| Issue 合入后未自动关闭 | 确认 PR body 包含 `Closes #N`，或手动 `gh issue close` |
+| Issue 合入后未自动关闭 | 确认 PR body 包含 `Closes #N`，或执行 Step 6 手动 `gh issue close` |
 
 ## 完整示例
 
@@ -154,6 +164,16 @@ EOF
 # 确认 checks 通过后合入
 gh pr checks
 gh pr merge --squash --delete-branch
+
+# 添加实现总结评论
+gh issue comment 42 --body "$(cat <<'EOF'
+## 实现总结
+- **核心变更**：Define Case struct with YAML frontmatter + Markdown body
+- **核心变更**：Implement WriteCase/ReadCase/ListCases/UpdateCase
+- **PR**: #43
+- **Commit**: abc1234
+EOF
+)"
 
 # 切回主分支
 git checkout main
