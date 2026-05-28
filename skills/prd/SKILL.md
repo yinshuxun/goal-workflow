@@ -16,10 +16,24 @@ Create detailed Product Requirements Documents that are clear, actionable, and s
 2. Ask 3-5 essential clarifying questions (with lettered options)
 3. Generate a structured PRD based on answers
 4. **Present PRD to user for review** — ask "Please review the PRD. Let me know if any adjustments are needed, or reply OK to confirm."
-5. Apply any adjustments, then save to `tasks/prd-[feature-name].md`
+5. Apply any adjustments, then save to `.workflow/prds/prd-[feature-name].md` by default
 6. **Next steps** — suggest the user run `/prd-to-spec` for technical design (optional) and `/to-issues` to create implementable tickets
 
 **Important:** Do NOT start implementing. Just create the PRD.
+
+---
+
+## Workflow Root
+
+Resolve the artifact root before saving:
+
+1. Use `--dir <path>` when provided.
+2. Use `.workflow/config.json` when it exists.
+3. Default new work to `.workflow/prds/`.
+4. Use `tasks/` only as a legacy fallback when no `.workflow/` exists.
+5. Support a custom path when the user explicitly provides one.
+
+When `.workflow/config.json` exists, save PRDs to `.workflow/prds/prd-[feature-name].md` unless the user chooses a custom path.
 
 ---
 
@@ -64,7 +78,7 @@ This lets users respond with "1A, 2C, 3B" for quick iteration. Remember to inden
 |----------|----------|
 | User skips clarifying questions (e.g., replies "whatever", "just write it") | Fill with reasonable defaults, mark with `[Assumption]` in PRD, prompt user to confirm during review |
 | User input is too vague (e.g., "add a feature") | Ask once for specifics; if still vague, infer from project context and mark assumptions |
-| `tasks/` directory does not exist | Auto-create `tasks/` directory |
+| `.workflow/` does not exist | Save to `tasks/` only as a legacy fallback, or suggest `/workflow-init` |
 | feature-name is hard to extract from input | Ask the user directly: "Suggested PRD filename is prd-XXX.md, please confirm or modify" |
 | User requests PRD changes after review | Apply changes and re-save without re-running the clarification flow |
 | PRD content exceeds 500 lines | Suggest the user consider splitting into multiple sub-feature PRDs |
@@ -148,8 +162,10 @@ Remaining questions or areas needing clarification.
 ## Output
 
 - **Format:** Markdown (`.md`)
-- **Location:** `tasks/`
+- **Location:** `.workflow/prds/` by default
 - **Filename:** `prd-[feature-name].md` (kebab-case)
+- **Fallback:** `tasks/` only as a legacy fallback when no `.workflow/` exists
+- **Override:** custom path when explicitly requested
 
 ---
 
@@ -158,7 +174,7 @@ Remaining questions or areas needing clarification.
 After the PRD is saved, suggest the user:
 
 ```
-✅ PRD saved to tasks/prd-[feature-name].md
+✅ PRD saved to .workflow/prds/prd-[feature-name].md
 
 Next steps:
   /prd-to-spec  →  Generate technical SPEC (optional — for complex features)
@@ -270,5 +286,5 @@ Before saving the PRD:
 - [ ] User stories are small and specific
 - [ ] Functional requirements are numbered and unambiguous
 - [ ] Non-goals section defines clear boundaries
-- [ ] Saved to `tasks/prd-[feature-name].md`
+- [ ] Saved to `.workflow/prds/prd-[feature-name].md`
 - [ ] Suggested next steps: `/prd-to-spec` (optional) and `/to-issues`

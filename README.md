@@ -22,10 +22,15 @@ npx skills add smallnest/goal-workflow
 
 | Command | Description |
 |---------|-------------|
+| `/workflow-init` | Initialize the unified `.workflow/` artifact workspace |
 | `/prd` | Generate PRD (requirements document) |
 | `/prd-to-spec` | Transform PRD into technical SPEC (optional) |
 | `/to-issues` | Decompose PRD/SPEC into Issues and create tickets |
+| `/workflow-status` | View terminal status or generate an HTML workflow board |
 | `/goal` | Implement an Issue end-to-end (Claude Code built-in) |
+| `/verify-it` | Capture fresh verification evidence for an Issue |
+| `/progress-it` | Update durable progress, history, and workflow index records |
+| `/resume-it` | Restore context and pick the next action for long-running work |
 | `/review-it` | Automated code review with iterative fixes |
 | `/ship-it` | Commit, PR, merge, and close the Issue |
 | `/note-it` | Capture implementation notes per Issue |

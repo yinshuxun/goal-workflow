@@ -509,22 +509,27 @@
         <li><a href="#overview">1. 概述</a></li>
         <li><a href="#install">2. 安装</a></li>
         <li><a href="#workflow">3. 工作流总览</a></li>
-        <li><a href="#step-prd">4. Step 1: /prd — 需求规划</a></li>
-        <li><a href="#step-prd-to-spec">5. Step 1.5: /prd-to-spec — PRD 转技术方案</a></li>
-        <li><a href="#step-to-issues">6. Step 1.6: /to-issues — 拆解 Issue 卡片</a></li>
-        <li><a href="#step-goal">7. Step 2: /goal — 功能实现</a></li>
-        <li><a href="#step-review">8. Step 3: /review-it — 代码审查</a></li>
-        <li><a href="#step-ship">9. Step 4: /ship-it — 提交交付</a></li>
-        <li><a href="#step-humanize">10. Bonus: /humanize-it — 去 AI 味改写</a></li>
-        <li><a href="#step-tts">11. Bonus: /listenhub-tts — 文本转语音</a></li>
-        <li><a href="#step-diagram">12. Bonus: /insight-diagram — UML 与架构图</a></li>
-        <li><a href="#step-refactor">13. Bonus: /refactor — 专家级代码重构</a></li>
-        <li><a href="#step-modern-go">14. Bonus: /modern-go — Go 代码现代化改造</a></li>
-        <li><a href="#step-note-it">15. Bonus: /note-it — 实现笔记记录</a></li>
-        <li><a href="#step-code-to-spec">16. Bonus: /code-to-spec — 逆向生成规格文档</a></li>
-        <li><a href="#step-smell">17. Bonus: /smell — 架构坏味道检测</a></li>
-        <li><a href="#platforms">18. 支持的平台</a></li>
-        <li><a href="#faq">19. FAQ</a></li>
+        <li><a href="#step-workflow-init">4. Step 0: /workflow-init — 初始化 .workflow</a></li>
+        <li><a href="#step-prd">5. Step 1: /prd — 需求规划</a></li>
+        <li><a href="#step-prd-to-spec">6. Step 1.5: /prd-to-spec — PRD 转技术方案</a></li>
+        <li><a href="#step-to-issues">7. Step 1.6: /to-issues — 拆解 Issue 卡片</a></li>
+        <li><a href="#step-workflow-status">8. Step 1.7: /workflow-status — 状态看板</a></li>
+        <li><a href="#step-goal">9. Step 2: /goal — 功能实现</a></li>
+        <li><a href="#step-verify-it">10. Step 2.5: /verify-it — 验证记录</a></li>
+        <li><a href="#step-progress-it">11. Step 2.6: /progress-it — 进展台账</a></li>
+        <li><a href="#step-resume-it">12. Step 2.7: /resume-it — 恢复上下文</a></li>
+        <li><a href="#step-review">13. Step 3: /review-it — 代码审查</a></li>
+        <li><a href="#step-ship">14. Step 4: /ship-it — 提交交付</a></li>
+        <li><a href="#step-humanize">14. Bonus: /humanize-it — 去 AI 味改写</a></li>
+        <li><a href="#step-tts">15. Bonus: /listenhub-tts — 文本转语音</a></li>
+        <li><a href="#step-diagram">16. Bonus: /insight-diagram — UML 与架构图</a></li>
+        <li><a href="#step-refactor">17. Bonus: /refactor — 专家级代码重构</a></li>
+        <li><a href="#step-modern-go">18. Bonus: /modern-go — Go 代码现代化改造</a></li>
+        <li><a href="#step-note-it">19. Bonus: /note-it — 实现笔记记录</a></li>
+        <li><a href="#step-code-to-spec">20. Bonus: /code-to-spec — 逆向生成规格文档</a></li>
+        <li><a href="#step-smell">21. Bonus: /smell — 架构坏味道检测</a></li>
+        <li><a href="#platforms">22. 支持的平台</a></li>
+        <li><a href="#faq">23. FAQ</a></li>
       </ul>
     </div>
 
@@ -540,7 +545,22 @@
       <p>
         它让 AI Agent 能够像一个有经验的工程师一样——从理解需求、拆解任务、编写代码、审查质量，到最终提交合入——全流程自主完成。你只需描述功能想法，剩下的交给工作流。
       </p>
+      <p>
+        长期需求默认使用 <code class="inline-code">.workflow/</code> 保存 PRD、SPEC、Issue、验证记录、状态看板和恢复上下文，避免大型任务跨多天或多轮会话后丢失进展。
+      </p>
       <div class="cards">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-dot slate"></div>
+            <h4>/workflow-init</h4>
+          </div>
+          <p>初始化统一工作流目录</p>
+          <ul>
+            <li>创建 .workflow/ 产物结构</li>
+            <li>支持迁移 tasks/ 和 docs/</li>
+            <li>为长期需求建立统一入口</li>
+          </ul>
+        </div>
         <div class="card">
           <div class="card-header">
             <div class="card-dot terracotta"></div>
@@ -579,6 +599,18 @@
         </div>
         <div class="card">
           <div class="card-header">
+            <div class="card-dot teal"></div>
+            <h4>/workflow-status</h4>
+          </div>
+          <p>状态摘要 + HTML 看板</p>
+          <ul>
+            <li>终端输出 Issue 分布</li>
+            <li>--html 生成本地看板</li>
+            <li>展示优先级、依赖和 verification</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-header">
             <div class="card-dot sage"></div>
             <h4>/goal</h4>
           </div>
@@ -587,6 +619,42 @@
             <li>Pick an Issue, implement it</li>
             <li>单次会话完成一个功能</li>
             <li>Claude Code 或 Codex</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-dot amber"></div>
+            <h4>/verify-it</h4>
+          </div>
+          <p>记录 fresh verification 证据</p>
+          <ul>
+            <li>保存测试、coverage、manual check</li>
+            <li>记录 exit code 和测试数量</li>
+            <li>判断 Issue 是否可信完成</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-dot amber"></div>
+            <h4>/progress-it</h4>
+          </div>
+          <p>更新长期进展台账</p>
+          <ul>
+            <li>更新 .workflow/progress/current.md</li>
+            <li>追加 .workflow/progress/history.md</li>
+            <li>同步 .workflow/index.md</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-dot slate"></div>
+            <h4>/resume-it</h4>
+          </div>
+          <p>恢复长期工作上下文</p>
+          <ul>
+            <li>读取 .workflow 当前状态</li>
+            <li>识别缺失验证和阻塞项</li>
+            <li>推荐下一条 /goal 命令</li>
           </ul>
         </div>
         <div class="card">
@@ -723,9 +791,14 @@
 <span class="cmd">npx skills add smallnest/goal-workflow</span>
 
 <span class="comment"># 或安装指定 skill</span>
+<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">workflow-init</span>
 <span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">prd</span>
 <span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">prd-to-spec</span>
 <span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">to-issues</span>
+<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">workflow-status</span>
+<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">verify-it</span>
+<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">progress-it</span>
+<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">resume-it</span>
 <span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">review-it</span>
 <span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">ship-it</span>
 <span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">humanize-it</span>
@@ -752,7 +825,7 @@
       </table>
 
       <div class="tip">
-        <strong>Tip：</strong>安装后在 Claude Code 中输入 <code class="inline-code">/prd</code>、<code class="inline-code">/prd-to-spec</code>、<code class="inline-code">/to-issues</code>、<code class="inline-code">/review-it</code>、<code class="inline-code">/ship-it</code>、<code class="inline-code">/refactor</code>、<code class="inline-code">/modern-go</code>、<code class="inline-code">/note-it</code>、<code class="inline-code">/code-to-spec</code>、<code class="inline-code">/humanize-it</code>、<code class="inline-code">/listenhub-tts</code>、<code class="inline-code">/insight-diagram</code>、<code class="inline-code">/smell</code> 即可直接调用对应技能。
+        <strong>Tip：</strong>安装后在 Claude Code 中输入 <code class="inline-code">/workflow-init</code>、<code class="inline-code">/prd</code>、<code class="inline-code">/prd-to-spec</code>、<code class="inline-code">/to-issues</code>、<code class="inline-code">/workflow-status</code>、<code class="inline-code">/verify-it</code>、<code class="inline-code">/progress-it</code>、<code class="inline-code">/resume-it</code>、<code class="inline-code">/review-it</code>、<code class="inline-code">/ship-it</code>、<code class="inline-code">/refactor</code>、<code class="inline-code">/modern-go</code>、<code class="inline-code">/note-it</code>、<code class="inline-code">/code-to-spec</code>、<code class="inline-code">/humanize-it</code>、<code class="inline-code">/listenhub-tts</code>、<code class="inline-code">/insight-diagram</code>、<code class="inline-code">/smell</code> 即可直接调用对应技能。
       </div>
     </div>
 
@@ -762,13 +835,18 @@
         <div class="section-dot terracotta"></div>
         <h3>3. 工作流总览</h3>
       </div>
-      <p>六步闭环，从需求到交付：</p>
+      <p>从统一产物目录开始，串起需求、设计、Issue、实现、验证、恢复、审查和交付：</p>
 
       <div style="text-align: center; margin: 1.5rem 0;">
         <img src="workflow.png" alt="Goal Workflow Infographic" style="max-width: 100%; border-radius: 12px; border: 1px solid #E8E4DE; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
       </div>
 
       <div class="flow-arrow">
+        <div class="flow-step">
+          <span class="step-num n1">0</span>
+          /workflow-init
+        </div>
+        <span class="flow-connector">&rarr;</span>
         <div class="flow-step">
           <span class="step-num n1">1</span>
           /prd
@@ -785,8 +863,23 @@
         </div>
         <span class="flow-connector">&rarr;</span>
         <div class="flow-step">
+          <span class="step-num n2">1.7</span>
+          /workflow-status
+        </div>
+        <span class="flow-connector">&rarr;</span>
+        <div class="flow-step">
           <span class="step-num n2">2</span>
           /goal
+        </div>
+        <span class="flow-connector">&rarr;</span>
+        <div class="flow-step">
+          <span class="step-num n5">2.5</span>
+          /verify-it
+        </div>
+        <span class="flow-connector">&rarr;</span>
+        <div class="flow-step">
+          <span class="step-num n5">2.6</span>
+          /progress-it
         </div>
         <span class="flow-connector">&rarr;</span>
         <div class="flow-step">
@@ -880,6 +973,12 @@
       <table>
         <tr><th>步骤</th><th>命令</th><th>输入</th><th>输出</th></tr>
         <tr>
+          <td><span class="badge badge-plan">0. 初始化</span></td>
+          <td><code class="inline-code">/workflow-init</code></td>
+          <td>项目目录 / 既有 tasks</td>
+          <td><code class="inline-code">.workflow/</code> 统一产物目录</td>
+        </tr>
+        <tr>
           <td><span class="badge badge-plan">1. 规划</span></td>
           <td><code class="inline-code">/prd</code></td>
           <td>功能描述 / 产品想法</td>
@@ -898,10 +997,34 @@
           <td>Issue 卡片</td>
         </tr>
         <tr>
+          <td><span class="badge badge-plan">1.7 状态</span></td>
+          <td><code class="inline-code">/workflow-status</code></td>
+          <td><code class="inline-code">.workflow/</code> 产物</td>
+          <td>终端状态 / HTML 看板</td>
+        </tr>
+        <tr>
           <td><span class="badge badge-impl">2. 实现</span></td>
           <td><code class="inline-code">/goal</code></td>
           <td>一个 Issue 卡片</td>
           <td>可运行的代码实现</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-impl">2.5 验证</span></td>
+          <td><code class="inline-code">/verify-it</code></td>
+          <td>Issue + 测试 / coverage / manual check</td>
+          <td>fresh verification 记录</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-impl">2.6 进展</span></td>
+          <td><code class="inline-code">/progress-it</code></td>
+          <td>Issue + verification + notes</td>
+          <td><code class="inline-code">.workflow/progress/</code> 与 <code class="inline-code">.workflow/index.md</code></td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-impl">2.7 恢复</span></td>
+          <td><code class="inline-code">/resume-it</code></td>
+          <td><code class="inline-code">.workflow/</code> 当前状态</td>
+          <td>上下文摘要 + 下一步建议</td>
         </tr>
         <tr>
           <td><span class="badge badge-review">3. 审查</span></td>
@@ -918,7 +1041,36 @@
       </table>
     </div>
 
-    <!-- Section 4: /prd -->
+    <!-- Section 4: /workflow-init -->
+    <div class="section" id="step-workflow-init">
+      <div class="section-title">
+        <div class="section-dot slate"></div>
+        <h3>4. Step 0: /workflow-init — 初始化 .workflow</h3>
+      </div>
+      <p>
+        <code class="inline-code">/workflow-init</code> 为长期需求创建统一的 <code class="inline-code">.workflow/</code> 产物目录，集中保存 PRD、SPEC、Issue、进展、验证记录和状态看板。
+      </p>
+      <h3>触发方式</h3>
+      <pre><code><span class="cmd">/workflow-init</span>
+<span class="cmd">/workflow-init</span> <span class="flag">--dir</span> <span class="value">.workflow</span>
+<span class="cmd">/workflow-init</span> <span class="flag">--migrate</span> <span class="value">tasks</span></code></pre>
+      <h3>输出结构</h3>
+      <pre><code><span class="value">.workflow/</span>
+├── prds/
+├── specs/
+├── issues/
+├── progress/
+├── verification/
+├── notes/
+├── decisions/
+├── status/
+└── archive/</code></pre>
+      <div class="tip">
+        <strong>Tip：</strong>如果项目已有 <code class="inline-code">tasks/</code> 或 <code class="inline-code">docs/</code>，默认建议复制到 <code class="inline-code">.workflow/</code> 并保留原文件，避免迁移时丢失历史。
+      </div>
+    </div>
+
+    <!-- Section 5: /prd -->
     <div class="section" id="step-prd">
       <div class="section-title">
         <div class="section-dot terracotta"></div>
@@ -941,7 +1093,7 @@
         <li>Agent 提出 3-5 个澄清问题（带字母选项，可快速回复 "1A, 2C, 3B"）</li>
         <li>根据回答生成结构化 PRD（用户故事、功能需求、非目标、验收标准）</li>
         <li>展示 PRD 供审阅，确认或调整</li>
-        <li>保存 PRD 到 <code class="inline-code">tasks/prd-[feature-name].md</code></li>
+        <li>默认保存 PRD 到 <code class="inline-code">.workflow/prds/prd-[feature-name].md</code></li>
         <li>拆解 PRD 为 Issue 列表，展示供确认</li>
         <li>选择创建模式（GitHub / Local / Baidu iCafe）并创建 Issue</li>
       </ul>
@@ -972,7 +1124,7 @@
 
       <h3>触发方式</h3>
       <pre><code><span class="comment"># 在 Claude Code 中直接输入</span>
-<span class="cmd">/prd-to-spec</span> <span class="value">tasks/prd-priority-system.md</span>
+<span class="cmd">/prd-to-spec</span> <span class="value">.workflow/prds/prd-priority-system.md</span>
 
 <span class="comment"># 或使用触发词</span>
 <span class="cmd">需求转设计：</span><span class="value">将优先级 PRD 转为技术方案</span>
@@ -1006,12 +1158,12 @@
 
       <h3>工作流程</h3>
       <ul class="step-list">
-        <li>定位 PRD 文件（自动扫描 tasks/ 或手动指定）</li>
+        <li>定位 PRD 文件（优先扫描 .workflow/prds/，再回退到 legacy tasks/ 或手动指定）</li>
         <li>（可选）分析现有代码库：架构、技术栈、模式、约定（无代码库时跳过，从零提出架构）</li>
         <li>提出 3-5 个技术澄清问题（带选项）</li>
         <li>生成完整 SPEC 文档</li>
         <li>展示供审阅，确认或迭代</li>
-        <li>保存到 <code class="inline-code">tasks/spec-[feature-name].md</code></li>
+        <li>默认保存到 <code class="inline-code">.workflow/specs/spec-[feature-name].md</code></li>
       </ul>
 
       <div class="note">
@@ -1047,7 +1199,7 @@
       <h3>输入来源</h3>
       <table>
         <tr><th>选项</th><th>说明</th></tr>
-        <tr><td>自动检测</td><td>扫描 <code class="inline-code">tasks/</code> 目录，列出可用的 PRD 和 SPEC</td></tr>
+        <tr><td>自动检测</td><td>优先扫描 <code class="inline-code">.workflow/prds/</code> 和 <code class="inline-code">.workflow/specs/</code>，再回退到 legacy <code class="inline-code">tasks/</code></td></tr>
         <tr><td>指定 PRD</td><td>只基于 PRD 的 User Stories 拆解</td></tr>
         <tr><td>指定 SPEC</td><td>使用 SPEC 的 Issue Mapping 章节作为主指导</td></tr>
         <tr><td>PRD + SPEC</td><td>（推荐）PRD 提供需求，SPEC 提供技术约定，Issue 最完整</td></tr>
@@ -1057,7 +1209,7 @@
       <table>
         <tr><th>平台</th><th>工具</th><th>说明</th></tr>
         <tr><td>GitHub</td><td><code class="inline-code">gh issue create</code></td><td>需要 gh CLI 认证</td></tr>
-        <tr><td>Local</td><td>Markdown 文件</td><td>保存到 <code class="inline-code">.autoresearch/issues/</code> 或自定义目录</td></tr>
+        <tr><td>Local</td><td>Markdown 文件</td><td>默认保存到 <code class="inline-code">.workflow/issues/</code>，也支持自定义目录</td></tr>
         <tr><td>Baidu iCafe</td><td><code class="inline-code">icafe-cli</code></td><td>需要 iCafe 空间参数</td></tr>
       </table>
 
@@ -1074,11 +1226,34 @@
       </div>
     </div>
 
-    <!-- Section 7: /goal -->
+    <!-- Section 7: /workflow-status -->
+    <div class="section" id="step-workflow-status">
+      <div class="section-title">
+        <div class="section-dot teal"></div>
+        <h3>8. Step 1.7: /workflow-status — 状态看板</h3>
+      </div>
+      <p>
+        <code class="inline-code">/workflow-status</code> 从 <code class="inline-code">.workflow/</code> 聚合 Issue、优先级、依赖、完成状态和 verification 状态，默认在终端输出状态摘要。
+      </p>
+      <h3>使用方式</h3>
+      <pre><code><span class="cmd">/workflow-status</span>
+<span class="cmd">/workflow-status</span> <span class="flag">--html</span>
+<span class="cmd">/workflow-status</span> <span class="flag">--html</span> <span class="flag">--watch</span>
+<span class="cmd">/workflow-status</span> <span class="flag">--json</span></code></pre>
+      <h3>输出</h3>
+      <ul class="step-list">
+        <li>终端输出 Todo、In Progress、Blocked、Review、Done 列。</li>
+        <li><code class="inline-code">--html</code> 生成 <code class="inline-code">.workflow/status/index.html</code>。</li>
+        <li><code class="inline-code">--html --watch</code> 定时重建 HTML，看板持续反映最新进展。</li>
+        <li>卡片展示 issue 编号、标题、priority、type、依赖、验收进度和 verification 状态。</li>
+      </ul>
+    </div>
+
+    <!-- Section 9: /goal -->
     <div class="section" id="step-goal">
       <div class="section-title">
         <div class="section-dot sage"></div>
-        <h3>7. Step 2: /goal — 功能实现</h3>
+        <h3>9. Step 2: /goal — 功能实现</h3>
       </div>
       <p>
         <code class="inline-code">/goal</code> 是 Claude Code 内置的目标驱动开发模式。选择一个 Issue 卡片，Agent 会理解验收标准并端到端实现。
@@ -1089,7 +1264,7 @@
 <span class="cmd">/goal</span> <span class="value">#42</span>
 
 <span class="comment"># Claude Code: 指定本地 Issue 文件</span>
-<span class="cmd">/goal</span> <span class="value">tasks/issues/issue-001-add-priority-field.md</span>
+<span class="cmd">/goal</span> <span class="value">.workflow/issues/issue-001-add-priority-field.md</span>
 
 <span class="comment"># Codex: 使用 --goal 参数</span>
 <span class="cmd">codex</span> <span class="flag">--goal</span> <span class="value">"Implement issue #42: Add priority field to database"</span></code></pre>
@@ -1109,11 +1284,73 @@
       </div>
     </div>
 
-    <!-- Section 7: /review-it -->
+    <!-- Section 10: /verify-it -->
+    <div class="section" id="step-verify-it">
+      <div class="section-title">
+        <div class="section-dot amber"></div>
+        <h3>10. Step 2.5: /verify-it — 验证记录</h3>
+      </div>
+      <p>
+        <code class="inline-code">/verify-it</code> 在 Issue 完成前记录 fresh verification 证据，包括测试命令、exit code、test suites、test cases、coverage 四项指标和人工验证结果。
+      </p>
+      <h3>使用方式</h3>
+      <pre><code><span class="cmd">/verify-it</span> <span class="value">issue-003</span>
+<span class="cmd">/verify-it</span> <span class="value">.workflow/issues/issue-003-current-p1-secret-batch.md</span>
+<span class="cmd">/verify-it</span> <span class="flag">--command</span> <span class="value">"npx nx test app --coverage"</span>
+<span class="cmd">/verify-it</span> <span class="flag">--manual</span></code></pre>
+      <h3>输出</h3>
+      <p>验证记录保存到 <code class="inline-code">.workflow/verification/</code>，并明确说明该 Issue 是否可以可信地标记完成。</p>
+    </div>
+
+    <!-- Section 11: /progress-it -->
+    <div class="section" id="step-progress-it">
+      <div class="section-title">
+        <div class="section-dot amber"></div>
+        <h3>11. Step 2.6: /progress-it — 进展台账</h3>
+      </div>
+      <p>
+        <code class="inline-code">/progress-it</code> 在验证后更新长期进展记录，把 Issue 状态、fresh verification、实现笔记和下一步动作写入 <code class="inline-code">.workflow/progress/current.md</code>、<code class="inline-code">.workflow/progress/history.md</code> 和 <code class="inline-code">.workflow/index.md</code>。
+      </p>
+      <h3>使用方式</h3>
+      <pre><code><span class="cmd">/progress-it</span> <span class="value">issue-003</span>
+<span class="cmd">/progress-it</span> <span class="value">.workflow/issues/issue-003-current-p1-secret-batch.md</span>
+<span class="cmd">/progress-it</span> <span class="flag">--dir</span> <span class="value">.workflow</span></code></pre>
+      <h3>输出</h3>
+      <ul class="step-list">
+        <li>更新 <code class="inline-code">.workflow/progress/current.md</code> 当前工作快照。</li>
+        <li>追加 <code class="inline-code">.workflow/progress/history.md</code> 历史记录。</li>
+        <li>同步 <code class="inline-code">.workflow/index.md</code> 导航入口。</li>
+        <li>如果缺少 fresh verification，不会把 Issue 标记为可信完成。</li>
+      </ul>
+    </div>
+
+    <!-- Section 12: /resume-it -->
+    <div class="section" id="step-resume-it">
+      <div class="section-title">
+        <div class="section-dot slate"></div>
+        <h3>12. Step 2.7: /resume-it — 恢复上下文</h3>
+      </div>
+      <p>
+        <code class="inline-code">/resume-it</code> 用于跨天、跨周或上下文丢失后恢复工作状态。它读取 <code class="inline-code">.workflow/</code> 中的 PRD、SPEC、Issue、progress 和 verification，给出当前状态、风险和下一步建议。
+      </p>
+      <h3>使用方式</h3>
+      <pre><code><span class="cmd">/resume-it</span>
+<span class="cmd">/resume-it</span> <span class="flag">--dir</span> <span class="value">.workflow</span>
+<span class="cmd">/resume-it</span> <span class="flag">--since</span> <span class="value">2026-05-20</span></code></pre>
+      <h3>输出</h3>
+      <ul class="step-list">
+        <li>当前 workflow、PRD、SPEC 和 Issue 数量。</li>
+        <li>已完成但缺少 verification 的风险项。</li>
+        <li>当前阻塞项、最近验证记录和暂停点。</li>
+        <li>推荐下一条 <code class="inline-code">/goal</code> 命令。</li>
+      </ul>
+    </div>
+
+    <!-- Section 12: /review-it -->
     <div class="section" id="step-review">
       <div class="section-title">
         <div class="section-dot plum"></div>
-        <h3>8. Step 3: /review-it — 代码审查</h3>
+        <h3>12. Step 3: /review-it — 代码审查</h3>
       </div>
       <p>
         <code class="inline-code">/review-it</code> 在代码提交前进行自动化审查，发现潜在问题并迭代修复，直到审查通过。
@@ -1157,7 +1394,7 @@
     <div class="section" id="step-ship">
       <div class="section-title">
         <div class="section-dot blue"></div>
-        <h3>9. Step 4: /ship-it — 提交交付</h3>
+        <h3>13. Step 4: /ship-it — 提交交付</h3>
       </div>
       <p>
         <code class="inline-code">/ship-it</code> 是实现完成后的标准收尾流程：提交代码、创建 PR、合入、添加实现总结、关闭 Issue。
@@ -1538,7 +1775,7 @@
       <ul class="step-list">
         <li>自动检测 Issue 编号（从分支名或 /goal 上下文）</li>
         <li>生成 HTML 格式笔记文件</li>
-        <li>保存到 <code class="inline-code">docs/issue#XXXX.html</code></li>
+        <li>默认保存到 <code class="inline-code">.workflow/notes/issue#XXXX.html</code></li>
         <li>如已存在该 Issue 笔记，提示是否追加或覆盖</li>
       </ul>
 

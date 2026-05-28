@@ -509,22 +509,27 @@
         <li><a href="#overview">1. Overview</a></li>
         <li><a href="#install">2. Installation</a></li>
         <li><a href="#workflow">3. Workflow Overview</a></li>
-        <li><a href="#step-prd">4. Step 1: /prd — Requirements Planning</a></li>
-        <li><a href="#step-prd-to-spec">5. Step 1.5: /prd-to-spec — PRD to Technical SPEC</a></li>
-        <li><a href="#step-to-issues">6. Step 1.6: /to-issues — Break Down into Issues</a></li>
-        <li><a href="#step-goal">7. Step 2: /goal — Feature Implementation</a></li>
-        <li><a href="#step-review">8. Step 3: /review-it — Code Review</a></li>
-        <li><a href="#step-ship">9. Step 4: /ship-it — Commit and Ship</a></li>
-        <li><a href="#step-humanize">10. Bonus: /humanize-it — De-AI Text Rewriting</a></li>
-        <li><a href="#step-tts">11. Bonus: /listenhub-tts — Text to Speech</a></li>
-        <li><a href="#step-diagram">12. Bonus: /insight-diagram — UML and Architecture Diagrams</a></li>
-        <li><a href="#step-refactor">13. Bonus: /refactor — Expert-Level Code Refactoring</a></li>
-        <li><a href="#step-modern-go">14. Bonus: /modern-go — Go Code Modernization</a></li>
-        <li><a href="#step-note-it">15. Bonus: /note-it — Implementation Notes</a></li>
-        <li><a href="#step-code-to-spec">16. Bonus: /code-to-spec — Reverse-Generate SPEC</a></li>
-        <li><a href="#step-smell">17. Bonus: /smell — Architecture Smell Detection</a></li>
-        <li><a href="#platforms">18. Supported Platforms</a></li>
-        <li><a href="#faq">19. FAQ</a></li>
+        <li><a href="#step-workflow-init">4. Step 0: /workflow-init — Initialize .workflow</a></li>
+        <li><a href="#step-prd">5. Step 1: /prd — Requirements Planning</a></li>
+        <li><a href="#step-prd-to-spec">6. Step 1.5: /prd-to-spec — PRD to Technical SPEC</a></li>
+        <li><a href="#step-to-issues">7. Step 1.6: /to-issues — Break Down into Issues</a></li>
+        <li><a href="#step-workflow-status">8. Step 1.7: /workflow-status — Status Board</a></li>
+        <li><a href="#step-goal">9. Step 2: /goal — Feature Implementation</a></li>
+        <li><a href="#step-verify-it">10. Step 2.5: /verify-it — Verification Evidence</a></li>
+        <li><a href="#step-progress-it">11. Step 2.6: /progress-it — Progress Ledger</a></li>
+        <li><a href="#step-resume-it">12. Step 2.7: /resume-it — Resume Context</a></li>
+        <li><a href="#step-review">13. Step 3: /review-it — Code Review</a></li>
+        <li><a href="#step-ship">14. Step 4: /ship-it — Commit and Ship</a></li>
+        <li><a href="#step-humanize">14. Bonus: /humanize-it — De-AI Text Rewriting</a></li>
+        <li><a href="#step-tts">15. Bonus: /listenhub-tts — Text to Speech</a></li>
+        <li><a href="#step-diagram">16. Bonus: /insight-diagram — UML and Architecture Diagrams</a></li>
+        <li><a href="#step-refactor">17. Bonus: /refactor — Expert-Level Code Refactoring</a></li>
+        <li><a href="#step-modern-go">18. Bonus: /modern-go — Go Code Modernization</a></li>
+        <li><a href="#step-note-it">19. Bonus: /note-it — Implementation Notes</a></li>
+        <li><a href="#step-code-to-spec">20. Bonus: /code-to-spec — Reverse-Generate SPEC</a></li>
+        <li><a href="#step-smell">21. Bonus: /smell — Architecture Smell Detection</a></li>
+        <li><a href="#platforms">22. Supported Platforms</a></li>
+        <li><a href="#faq">23. FAQ</a></li>
       </ul>
     </div>
 
@@ -540,7 +545,22 @@
       <p>
         It enables AI agents to act like experienced engineers — from understanding requirements, breaking down tasks, writing code, reviewing quality, to final submission and merge — autonomously completing the entire process. You just describe the feature idea, and the workflow handles the rest.
       </p>
+      <p>
+        Long-running work uses <code class="inline-code">.workflow/</code> by default to keep PRDs, SPECs, Issues, verification records, status boards, and resume context in one durable workspace.
+      </p>
       <div class="cards">
+        <div class="card">
+          <div class="card-header">
+            <div class="card-dot slate"></div>
+            <h4>/workflow-init</h4>
+          </div>
+          <p>Initialize the unified artifact workspace</p>
+          <ul>
+            <li>Create .workflow/ structure</li>
+            <li>Centralize PRD / SPEC / Issues</li>
+            <li>Supports legacy migration</li>
+          </ul>
+        </div>
         <div class="card">
           <div class="card-header">
             <div class="card-dot terracotta"></div>
@@ -579,6 +599,18 @@
         </div>
         <div class="card">
           <div class="card-header">
+            <div class="card-dot amber"></div>
+            <h4>/workflow-status</h4>
+          </div>
+          <p>Terminal or HTML workflow board</p>
+          <ul>
+            <li>Show Issue priority and state</li>
+            <li>Track dependencies and verification</li>
+            <li>Supports --html and --html --watch</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-header">
             <div class="card-dot sage"></div>
             <h4>/goal</h4>
           </div>
@@ -587,6 +619,42 @@
             <li>Pick an Issue, implement it</li>
             <li>Complete one feature per session</li>
             <li>Claude Code or Codex</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-dot amber"></div>
+            <h4>/verify-it</h4>
+          </div>
+          <p>Capture fresh verification evidence</p>
+          <ul>
+            <li>Record commands and exit codes</li>
+            <li>Record tests and coverage metrics</li>
+            <li>Decide whether completion is trusted</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-dot amber"></div>
+            <h4>/progress-it</h4>
+          </div>
+          <p>Update the durable progress ledger</p>
+          <ul>
+            <li>Update .workflow/progress/current.md</li>
+            <li>Append .workflow/progress/history.md</li>
+            <li>Sync .workflow/index.md</li>
+          </ul>
+        </div>
+        <div class="card">
+          <div class="card-header">
+            <div class="card-dot slate"></div>
+            <h4>/resume-it</h4>
+          </div>
+          <p>Restore long-running workflow context</p>
+          <ul>
+            <li>Read current .workflow state</li>
+            <li>Detect stale progress and gaps</li>
+            <li>Recommend the next /goal command</li>
           </ul>
         </div>
         <div class="card">
@@ -682,7 +750,7 @@
           <ul>
             <li>Design decisions / deviations / tradeoffs</li>
             <li>Tracking open questions</li>
-            <li>Saved as HTML in docs/</li>
+            <li>Saved as HTML in .workflow/notes/</li>
           </ul>
         </div>
         <div class="card">
@@ -723,10 +791,15 @@
 <span class="cmd">npx skills add smallnest/goal-workflow</span>
 
 <span class="comment"># Or install a specific skill</span>
-<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">prd</span>
+<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">workflow-init</span>
+	<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">prd</span>
 <span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">prd-to-spec</span>
 <span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">to-issues</span>
-<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">review-it</span>
+<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">workflow-status</span>
+	<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">verify-it</span>
+	<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">progress-it</span>
+	<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">resume-it</span>
+	<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">review-it</span>
 <span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">ship-it</span>
 <span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">humanize-it</span>
 <span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">listenhub-tts</span>
@@ -752,7 +825,7 @@
       </table>
 
       <div class="tip">
-        <strong>Tip:</strong> After installation, type <code class="inline-code">/prd</code>, <code class="inline-code">/prd-to-spec</code>, <code class="inline-code">/to-issues</code>, <code class="inline-code">/review-it</code>, <code class="inline-code">/ship-it</code>, <code class="inline-code">/refactor</code>, <code class="inline-code">/modern-go</code>, <code class="inline-code">/note-it</code>, <code class="inline-code">/code-to-spec</code>, <code class="inline-code">/humanize-it</code>, <code class="inline-code">/listenhub-tts</code>, <code class="inline-code">/insight-diagram</code>, <code class="inline-code">/smell</code> in Claude Code to directly invoke the corresponding skill.
+        <strong>Tip:</strong> After installation, type <code class="inline-code">/workflow-init</code>, <code class="inline-code">/prd</code>, <code class="inline-code">/prd-to-spec</code>, <code class="inline-code">/to-issues</code>, <code class="inline-code">/workflow-status</code>, <code class="inline-code">/verify-it</code>, <code class="inline-code">/progress-it</code>, <code class="inline-code">/resume-it</code>, <code class="inline-code">/review-it</code>, <code class="inline-code">/ship-it</code>, <code class="inline-code">/refactor</code>, <code class="inline-code">/modern-go</code>, <code class="inline-code">/note-it</code>, <code class="inline-code">/code-to-spec</code>, <code class="inline-code">/humanize-it</code>, <code class="inline-code">/listenhub-tts</code>, <code class="inline-code">/insight-diagram</code>, <code class="inline-code">/smell</code> in Claude Code to directly invoke the corresponding skill.
       </div>
     </div>
 
@@ -762,13 +835,18 @@
         <div class="section-dot terracotta"></div>
         <h3>3. Workflow Overview</h3>
       </div>
-      <p>Six-step closed loop, from requirements to delivery:</p>
+      <p>Start from a unified artifact workspace, then connect requirements, design, Issues, implementation, verification, resume, review, and shipping:</p>
 
       <div style="text-align: center; margin: 1.5rem 0;">
         <img src="workflow.png" alt="Goal Workflow Infographic" style="max-width: 100%; border-radius: 12px; border: 1px solid #E8E4DE; box-shadow: 0 2px 8px rgba(0,0,0,0.06);">
       </div>
 
       <div class="flow-arrow">
+        <div class="flow-step">
+          <span class="step-num n0">0</span>
+          /workflow-init
+        </div>
+        <span class="flow-connector">&rarr;</span>
         <div class="flow-step">
           <span class="step-num n1">1</span>
           /prd
@@ -785,8 +863,23 @@
         </div>
         <span class="flow-connector">&rarr;</span>
         <div class="flow-step">
+          <span class="step-num n6">1.7</span>
+          /workflow-status
+        </div>
+        <span class="flow-connector">&rarr;</span>
+        <div class="flow-step">
           <span class="step-num n2">2</span>
           /goal
+        </div>
+        <span class="flow-connector">&rarr;</span>
+        <div class="flow-step">
+          <span class="step-num n8">2.5</span>
+          /verify-it
+        </div>
+        <span class="flow-connector">&rarr;</span>
+        <div class="flow-step">
+          <span class="step-num n8">2.6</span>
+          /progress-it
         </div>
         <span class="flow-connector">&rarr;</span>
         <div class="flow-step">
@@ -880,6 +973,12 @@
       <table>
         <tr><th>Step</th><th>Command</th><th>Input</th><th>Output</th></tr>
         <tr>
+          <td><span class="badge badge-note">0. Initialize</span></td>
+          <td><code class="inline-code">/workflow-init</code></td>
+          <td>Project or custom root</td>
+          <td><code class="inline-code">.workflow/</code> artifact workspace</td>
+        </tr>
+        <tr>
           <td><span class="badge badge-plan">1. Plan</span></td>
           <td><code class="inline-code">/prd</code></td>
           <td>Feature description / product idea</td>
@@ -898,10 +997,34 @@
           <td>Issue cards</td>
         </tr>
         <tr>
+          <td><span class="badge badge-plan">1.7 Status</span></td>
+          <td><code class="inline-code">/workflow-status</code></td>
+          <td><code class="inline-code">.workflow/</code> artifacts</td>
+          <td>Terminal summary or HTML board</td>
+        </tr>
+        <tr>
           <td><span class="badge badge-impl">2. Implement</span></td>
           <td><code class="inline-code">/goal</code></td>
           <td>An Issue card</td>
           <td>Runnable code implementation</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-humanize">2.5 Verify</span></td>
+          <td><code class="inline-code">/verify-it</code></td>
+          <td>Issue implementation and command output</td>
+          <td><code class="inline-code">.workflow/verification/</code> record</td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-note">2.6 Progress</span></td>
+          <td><code class="inline-code">/progress-it</code></td>
+          <td>Issue, verification, and notes</td>
+          <td><code class="inline-code">.workflow/progress/</code> and <code class="inline-code">.workflow/index.md</code></td>
+        </tr>
+        <tr>
+          <td><span class="badge badge-note">2.7 Resume</span></td>
+          <td><code class="inline-code">/resume-it</code></td>
+          <td><code class="inline-code">.workflow/</code> current state</td>
+          <td>Recovery summary and next action</td>
         </tr>
         <tr>
           <td><span class="badge badge-review">3. Review</span></td>
@@ -918,11 +1041,41 @@
       </table>
     </div>
 
-    <!-- Section 4: /prd -->
+    <!-- Section 4: /workflow-init -->
+    <div class="section" id="step-workflow-init">
+      <div class="section-title">
+        <div class="section-dot slate"></div>
+        <h3>4. Step 0: /workflow-init — Initialize .workflow</h3>
+      </div>
+      <p>
+        <code class="inline-code">/workflow-init</code> creates the unified <code class="inline-code">.workflow/</code> artifact workspace for long-running work, keeping PRDs, SPECs, Issues, progress, verification records, and status output in one place.
+      </p>
+      <h3>Usage</h3>
+      <pre><code><span class="cmd">/workflow-init</span>
+<span class="cmd">/workflow-init</span> <span class="flag">--dir</span> <span class="value">.workflow</span>
+<span class="cmd">/workflow-init</span> <span class="flag">--migrate</span> <span class="value">tasks</span></code></pre>
+      <h3>Workspace Structure</h3>
+      <pre><code><span class="value">.workflow/</span>
+  config.json
+  index.md
+  prds/
+  specs/
+  issues/
+  progress/
+  verification/
+  notes/
+  decisions/
+  status/</code></pre>
+      <div class="tip">
+        <strong>Tip:</strong> If a project already has <code class="inline-code">tasks/</code> or <code class="inline-code">docs/</code> artifacts, copy them into <code class="inline-code">.workflow/</code> by default and keep the originals to avoid losing history.
+      </div>
+    </div>
+
+    <!-- Section 5: /prd -->
     <div class="section" id="step-prd">
       <div class="section-title">
         <div class="section-dot terracotta"></div>
-        <h3>4. Step 1: /prd — Requirements Planning</h3>
+        <h3>5. Step 1: /prd — Requirements Planning</h3>
       </div>
       <p>
         <code class="inline-code">/prd</code> transforms a vague feature idea into a structured product requirements document and breaks it down into independently implementable Issue cards.
@@ -941,7 +1094,7 @@
         <li>Agent asks 3-5 clarifying questions (with letter options, reply quickly with "1A, 2C, 3B")</li>
         <li>Generates structured PRD based on answers (User Stories, Functional Requirements, Non-Goals, Acceptance Criteria)</li>
         <li>Presents PRD for review; confirm or adjust</li>
-        <li>Saves PRD to <code class="inline-code">tasks/prd-[feature-name].md</code></li>
+        <li>Saves PRD to <code class="inline-code">.workflow/prds/prd-[feature-name].md</code> by default</li>
         <li>Breaks down PRD into Issue list; presents for confirmation</li>
         <li>Selects creation mode (GitHub / Local / Baidu iCafe) and creates Issues</li>
       </ul>
@@ -964,7 +1117,7 @@
     <div class="section" id="step-prd-to-spec">
       <div class="section-title">
         <div class="section-dot terracotta"></div>
-        <h3>5. Step 1.5: /prd-to-spec — PRD to Technical SPEC</h3>
+        <h3>6. Step 1.5: /prd-to-spec — PRD to Technical SPEC</h3>
       </div>
       <p>
         <code class="inline-code">/prd-to-spec</code> transforms a product requirements document (PRD) into an implementable technical design SPEC. PRD says "what to build"; SPEC says "how to build it".
@@ -972,7 +1125,7 @@
 
       <h3>How to Invoke</h3>
       <pre><code><span class="comment"># Type directly in Claude Code</span>
-<span class="cmd">/prd-to-spec</span> <span class="value">tasks/prd-priority-system.md</span>
+<span class="cmd">/prd-to-spec</span> <span class="value">.workflow/prds/prd-priority-system.md</span>
 
 <span class="comment"># Or use trigger phrases</span>
 <span class="cmd">PRD to design: </span><span class="value">Convert priority PRD to technical plan</span>
@@ -1006,12 +1159,12 @@
 
       <h3>Workflow</h3>
       <ul class="step-list">
-        <li>Locate PRD file (auto-scan tasks/ or manually specified)</li>
+        <li>Locate PRD file (scan .workflow/prds/ first, then legacy tasks/, or use a manual path)</li>
         <li>(Optional) Analyze existing codebase: architecture, tech stack, patterns, conventions (skip if no codebase — propose architecture from scratch)</li>
         <li>Ask 3-5 technical clarification questions (with options)</li>
         <li>Generate complete SPEC document</li>
         <li>Present for review; confirm or iterate</li>
-        <li>Save to <code class="inline-code">tasks/spec-[feature-name].md</code></li>
+        <li>Save to <code class="inline-code">.workflow/specs/spec-[feature-name].md</code> by default</li>
       </ul>
 
       <div class="note">
@@ -1029,7 +1182,7 @@
     <div class="section" id="step-to-issues">
       <div class="section-title">
         <div class="section-dot coral"></div>
-        <h3>6. Step 1.6: /to-issues — Break Down into Issues</h3>
+        <h3>7. Step 1.6: /to-issues — Break Down into Issues</h3>
       </div>
       <p>
         <code class="inline-code">/to-issues</code> breaks down a PRD and/or SPEC into independently implementable Issues and creates them on your chosen platform. It can be used standalone — no need to run <code class="inline-code">/prd</code> first.
@@ -1047,7 +1200,7 @@
       <h3>Input Sources</h3>
       <table>
         <tr><th>Option</th><th>Description</th></tr>
-        <tr><td>Auto-detect</td><td>Scan <code class="inline-code">tasks/</code> directory, list available PRDs and SPECs</td></tr>
+        <tr><td>Auto-detect</td><td>Scan <code class="inline-code">.workflow/prds/</code> and <code class="inline-code">.workflow/specs/</code> first, then legacy <code class="inline-code">tasks/</code></td></tr>
         <tr><td>Specify PRD</td><td>Break down based only on PRD's User Stories</td></tr>
         <tr><td>Specify SPEC</td><td>Use SPEC's Issue Mapping chapter as primary guidance</td></tr>
         <tr><td>PRD + SPEC</td><td>(Recommended) PRD provides requirements, SPEC provides technical conventions — most complete Issues</td></tr>
@@ -1057,7 +1210,7 @@
       <table>
         <tr><th>Platform</th><th>Tool</th><th>Description</th></tr>
         <tr><td>GitHub</td><td><code class="inline-code">gh issue create</code></td><td>Requires gh CLI authentication</td></tr>
-        <tr><td>Local</td><td>Markdown files</td><td>Saved to <code class="inline-code">.autoresearch/issues/</code> or custom directory</td></tr>
+        <tr><td>Local</td><td>Markdown files</td><td>Saved to <code class="inline-code">.workflow/issues/</code> by default, or a custom directory</td></tr>
         <tr><td>Baidu iCafe</td><td><code class="inline-code">icafe-cli</code></td><td>Requires iCafe space parameters</td></tr>
       </table>
 
@@ -1074,11 +1227,33 @@
       </div>
     </div>
 
-    <!-- Section 7: /goal -->
+    <!-- Section 8: /workflow-status -->
+    <div class="section" id="step-workflow-status">
+      <div class="section-title">
+        <div class="section-dot amber"></div>
+        <h3>8. Step 1.7: /workflow-status — Status Board</h3>
+      </div>
+      <p>
+        <code class="inline-code">/workflow-status</code> aggregates Issues, priorities, dependencies, completion state, and verification state from <code class="inline-code">.workflow/</code>. By default it prints a compact terminal summary.
+      </p>
+      <h3>Usage</h3>
+      <pre><code><span class="cmd">/workflow-status</span>
+<span class="cmd">/workflow-status</span> <span class="flag">--html</span>
+<span class="cmd">/workflow-status</span> <span class="flag">--html</span> <span class="flag">--watch</span>
+<span class="cmd">/workflow-status</span> <span class="flag">--json</span></code></pre>
+      <h3>Output</h3>
+      <ul class="step-list">
+        <li>Terminal mode prints Todo, In Progress, Blocked, Review, and Done columns.</li>
+        <li><code class="inline-code">--html</code> generates <code class="inline-code">.workflow/status/index.html</code>.</li>
+        <li><code class="inline-code">--html --watch</code> rebuilds the local board as workflow files change.</li>
+      </ul>
+    </div>
+
+    <!-- Section 9: /goal -->
     <div class="section" id="step-goal">
       <div class="section-title">
         <div class="section-dot sage"></div>
-        <h3>7. Step 2: /goal — Feature Implementation</h3>
+        <h3>9. Step 2: /goal — Feature Implementation</h3>
       </div>
       <p>
         <code class="inline-code">/goal</code> is Claude Code's built-in goal-driven development mode. Pick an Issue card and the agent understands the acceptance criteria and implements end-to-end.
@@ -1089,7 +1264,7 @@
 <span class="cmd">/goal</span> <span class="value">#42</span>
 
 <span class="comment"># Claude Code: specify local Issue file</span>
-<span class="cmd">/goal</span> <span class="value">tasks/issues/issue-001-add-priority-field.md</span>
+<span class="cmd">/goal</span> <span class="value">.workflow/issues/issue-001-add-priority-field.md</span>
 
 <span class="comment"># Codex: use --goal flag</span>
 <span class="cmd">codex</span> <span class="flag">--goal</span> <span class="value">"Implement issue #42: Add priority field to database"</span></code></pre>
@@ -1109,11 +1284,73 @@
       </div>
     </div>
 
-    <!-- Section 7: /review-it -->
+    <!-- Section 10: /verify-it -->
+    <div class="section" id="step-verify-it">
+      <div class="section-title">
+        <div class="section-dot amber"></div>
+        <h3>10. Step 2.5: /verify-it — Verification Evidence</h3>
+      </div>
+      <p>
+        <code class="inline-code">/verify-it</code> records fresh verification evidence before an Issue is marked complete, including commands, exit code, test suites, test cases, coverage metrics, and manual checks.
+      </p>
+      <h3>Usage</h3>
+      <pre><code><span class="cmd">/verify-it</span> <span class="value">issue-003</span>
+<span class="cmd">/verify-it</span> <span class="value">.workflow/issues/issue-003-current-p1-secret-batch.md</span>
+<span class="cmd">/verify-it</span> <span class="flag">--command</span> <span class="value">"npx nx test app --coverage"</span>
+<span class="cmd">/verify-it</span> <span class="flag">--manual</span></code></pre>
+      <h3>Output</h3>
+      <p>Verification records are saved under <code class="inline-code">.workflow/verification/</code> and state whether the Issue can be trusted as complete.</p>
+    </div>
+
+    <!-- Section 11: /progress-it -->
+    <div class="section" id="step-progress-it">
+      <div class="section-title">
+        <div class="section-dot amber"></div>
+        <h3>11. Step 2.6: /progress-it — Progress Ledger</h3>
+      </div>
+      <p>
+        <code class="inline-code">/progress-it</code> updates durable progress records after verification, writing Issue status, fresh verification, implementation notes, and the next action into <code class="inline-code">.workflow/progress/current.md</code>, <code class="inline-code">.workflow/progress/history.md</code>, and <code class="inline-code">.workflow/index.md</code>.
+      </p>
+      <h3>Usage</h3>
+      <pre><code><span class="cmd">/progress-it</span> <span class="value">issue-003</span>
+<span class="cmd">/progress-it</span> <span class="value">.workflow/issues/issue-003-current-p1-secret-batch.md</span>
+<span class="cmd">/progress-it</span> <span class="flag">--dir</span> <span class="value">.workflow</span></code></pre>
+      <h3>Output</h3>
+      <ul class="step-list">
+        <li>Updates <code class="inline-code">.workflow/progress/current.md</code> as the current work snapshot.</li>
+        <li>Appends <code class="inline-code">.workflow/progress/history.md</code> as the history ledger.</li>
+        <li>Syncs <code class="inline-code">.workflow/index.md</code> as the navigation entry point.</li>
+        <li>If fresh verification is missing, it does not mark the Issue as trusted complete.</li>
+      </ul>
+    </div>
+
+    <!-- Section 12: /resume-it -->
+    <div class="section" id="step-resume-it">
+      <div class="section-title">
+        <div class="section-dot slate"></div>
+        <h3>12. Step 2.7: /resume-it — Resume Context</h3>
+      </div>
+      <p>
+        <code class="inline-code">/resume-it</code> restores work state after days, weeks, or context loss. It reads PRDs, SPECs, Issues, progress, and verification under <code class="inline-code">.workflow/</code>, then reports state, risks, and the next recommended action.
+      </p>
+      <h3>Usage</h3>
+      <pre><code><span class="cmd">/resume-it</span>
+<span class="cmd">/resume-it</span> <span class="flag">--dir</span> <span class="value">.workflow</span>
+<span class="cmd">/resume-it</span> <span class="flag">--since</span> <span class="value">2026-05-20</span></code></pre>
+      <h3>Output</h3>
+      <ul class="step-list">
+        <li>Current workflow, PRD, SPEC, and Issue counts.</li>
+        <li>Done Issues that are missing verification.</li>
+        <li>Current blockers, latest verification, and pause point.</li>
+        <li>Recommended next <code class="inline-code">/goal</code> command.</li>
+      </ul>
+    </div>
+
+    <!-- Section 12: /review-it -->
     <div class="section" id="step-review">
       <div class="section-title">
         <div class="section-dot plum"></div>
-        <h3>8. Step 3: /review-it — Code Review</h3>
+        <h3>12. Step 3: /review-it — Code Review</h3>
       </div>
       <p>
         <code class="inline-code">/review-it</code> performs automated review before committing, discovering potential issues and iteratively fixing them until the review passes.
@@ -1157,7 +1394,7 @@
     <div class="section" id="step-ship">
       <div class="section-title">
         <div class="section-dot blue"></div>
-        <h3>9. Step 4: /ship-it — Commit and Ship</h3>
+        <h3>13. Step 4: /ship-it — Commit and Ship</h3>
       </div>
       <p>
         <code class="inline-code">/ship-it</code> is the standard closing workflow after implementation is complete: commit code, create PR, merge, add implementation summary, close Issue.
@@ -1538,7 +1775,7 @@
       <ul class="step-list">
         <li>Auto-detect Issue number (from branch name or /goal context)</li>
         <li>Generate HTML format note file</li>
-        <li>Save to <code class="inline-code">docs/issue#XXXX.html</code></li>
+        <li>Save to <code class="inline-code">.workflow/notes/issue#XXXX.html</code> by default</li>
         <li>If notes already exist for this Issue, prompt to append or overwrite</li>
       </ul>
 

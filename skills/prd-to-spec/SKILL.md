@@ -31,6 +31,18 @@ Transform a Product Requirements Document (PRD) into a detailed technical SPEC t
 
 ---
 
+## Workflow Root
+
+Resolve the artifact root before locating or saving files:
+
+1. Use `--dir <path>` when provided.
+2. Use `.workflow/config.json` when it exists.
+3. Read PRDs from `.workflow/prds/` and save SPECs to `.workflow/specs/` by default.
+4. Use `tasks/` only as a legacy fallback when no `.workflow/` exists.
+5. Support a custom path when the user explicitly provides one.
+
+---
+
 ## Step 1: Locate PRD
 
 Find the input PRD in one of these ways:
@@ -38,18 +50,18 @@ Find the input PRD in one of these ways:
 ```
 Provide the PRD to convert:
 
-A. File path (e.g., tasks/prd-priority-system.md)
+A. File path (e.g., .workflow/prds/prd-priority-system.md)
 B. GitHub Issue URL
 C. Paste PRD content directly
-D. Auto-detect: scan tasks/ directory for recent PRDs
+D. Auto-detect: scan .workflow/prds/ first, then tasks/ as legacy fallback
 ```
 
 If auto-detecting, list available PRDs and let the user choose:
 
 ```
-Found PRDs in tasks/:
-  1. tasks/prd-priority-system.md (2024-03-15)
-  2. tasks/prd-user-auth.md (2024-03-10)
+Found PRDs in .workflow/prds/:
+  1. .workflow/prds/prd-priority-system.md (2024-03-15)
+  2. .workflow/prds/prd-user-auth.md (2024-03-10)
 
 Which PRD should I convert? [1/2]
 ```
@@ -332,9 +344,9 @@ Ask user for save location:
 ```
 Where should I save the SPEC?
 
-A. tasks/spec-[feature-name].md (alongside PRD, recommended)
-B. docs/spec-[feature-name].md
-C. Custom path: [specify]
+A. .workflow/specs/spec-[feature-name].md (recommended)
+B. tasks/spec-[feature-name].md (legacy fallback)
+C. custom path: [specify]
 ```
 
 ---

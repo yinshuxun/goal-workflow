@@ -1,6 +1,6 @@
 ---
 name: note-it
-description: "Capture implementation notes after code implementation and review/fix. Records design decisions, deviations, tradeoffs, and open questions to docs/issue#XXXX.html. Triggers on: /note-it, 记录笔记, implementation notes."
+description: "Use when implementation notes should be captured after code implementation and review/fix, especially design decisions, deviations, tradeoffs, or open questions. Triggers on: /note-it, 记录笔记, implementation notes."
 user-invocable: true
 ---
 
@@ -20,7 +20,7 @@ Use when:
 
 1. Determine the Issue number from context (branch name, `/goal` target, or user input)
 2. Review the implementation against the Issue spec / PRD
-3. Generate an HTML notes file at `docs/issue#XXXX.html`
+3. Generate an HTML notes file at `.workflow/notes/issue#XXXX.html` by default
 4. Present a summary to the user
 
 ## Notes Structure
@@ -51,11 +51,23 @@ Anything you'd want confirmed or revised:
 - What should the user verify?
 - What might need follow-up?
 
+## Workflow Root
+
+Resolve the artifact root before saving notes:
+
+1. Use `--dir <path>` when provided.
+2. Use `.workflow/config.json` when it exists.
+3. Save notes to `.workflow/notes/` by default.
+4. Use `docs/` only as a legacy fallback when no `.workflow/` exists.
+5. Support a custom path when the user explicitly provides one.
+
 ## Output
 
 - **Format:** HTML
-- **Location:** `docs/`
+- **Location:** `.workflow/notes/` by default
 - **Filename:** `issue#XXXX.html` (where XXXX is the zero-padded Issue number, e.g., `issue#0042.html`)
+- **Fallback:** `docs/` only as a legacy fallback when no `.workflow/` exists
+- **Override:** custom path when explicitly requested
 
 ## HTML Template
 
@@ -171,10 +183,10 @@ Use this exact HTML structure:
 | Scenario | Handling |
 |----------|----------|
 | No Issue number found | Ask the user to specify |
-| `docs/` directory does not exist | Auto-create it |
+| `.workflow/notes/` directory does not exist | Auto-create it when `.workflow/config.json` exists |
 | Notes file already exists for this Issue | Ask: "Update existing notes or overwrite?" — default to update (append new items) |
 | No deviations or open questions | Write "None — implementation followed the spec as written." |
-| Spec/PRD file not found | Note in Open Questions: "No PRD found at tasks/prd-*.md — verify against original requirements." |
+| Spec/PRD file not found | Note in Open Questions: "No PRD found under `.workflow/prds/` or legacy `tasks/` — verify against original requirements." |
 
 ## Checklist
 

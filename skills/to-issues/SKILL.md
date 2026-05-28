@@ -20,6 +20,18 @@ Decompose a PRD and/or technical SPEC into small, independent, implementable Iss
 
 ---
 
+## Workflow Root
+
+Resolve the artifact root before locating inputs or saving local Issues:
+
+1. Use `--dir <path>` when provided.
+2. Use `.workflow/config.json` when it exists.
+3. Read PRDs from `.workflow/prds/`, SPECs from `.workflow/specs/`, and save local Issues to `.workflow/issues/` by default.
+4. Use `.autoresearch/issues` only as a legacy fallback when no `.workflow/` exists.
+5. Support a custom path when the user explicitly provides one.
+
+---
+
 ## Step 1: Locate Input
 
 Find the input document:
@@ -27,9 +39,9 @@ Find the input document:
 ```
 What should I base the Issues on?
 
-A. Auto-detect: scan tasks/ for recent PRDs and SPECs
-B. Specific PRD file (e.g., tasks/prd-priority-system.md)
-C. Specific SPEC file (e.g., tasks/spec-priority-system.md)
+A. Auto-detect: scan .workflow/prds/ and .workflow/specs/ first, then tasks/ as legacy fallback
+B. Specific PRD file (e.g., .workflow/prds/prd-priority-system.md)
+C. Specific SPEC file (e.g., .workflow/specs/spec-priority-system.md)
 D. Both PRD and SPEC (best: PRD for requirements, SPEC for technical contracts)
 E. Paste requirements directly
 ```
@@ -122,7 +134,7 @@ Your choice:
 
 **Ask user:**
 ```
-Where should I save the Issue files? (default: .autoresearch/issues)
+Where should I save the Issue files? (default: .workflow/issues/)
 ```
 
 **Actions:**
@@ -204,7 +216,7 @@ Issues created: N
 
 | Scenario | Handling |
 |----------|----------|
-| No PRD/SPEC found in tasks/ | Ask user to provide file path or paste requirements |
+| No PRD/SPEC found in `.workflow/` or legacy `tasks/` | Ask user to provide file path or paste requirements |
 | PRD has no User Stories | Derive Issues from Functional Requirements instead |
 | SPEC has Issue Mapping (Section 10.2) | Use it as primary source, cross-reference with PRD |
 | `gh` CLI not authenticated for GitHub mode | Show error, suggest `gh auth login`, offer to switch to Local mode |

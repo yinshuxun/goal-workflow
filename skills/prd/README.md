@@ -7,7 +7,7 @@ Generate structured Product Requirements Documents (PRD) for new features, then 
 - Asks 3-5 clarifying questions with lettered options for quick iteration
 - Generates well-structured PRD with user stories, functional requirements, non-goals, and more
 - Supports user review and adjustment before saving
-- Saves output to `tasks/prd-[feature-name].md`
+- Saves output to `.workflow/prds/prd-[feature-name].md` by default, with legacy `tasks/` fallback
 - **Decomposes PRD into small, independent, implementable Issues**
 - **Creates Issues in three platforms: GitHub / Local / Baidu iCafe**
 - Bilingual (Chinese & English) edge case handling
