@@ -1,22 +1,24 @@
 ---
 name: workflow-status
-description: "View or generate a goal-workflow status board. Use when inspecting .workflow issues, priorities, dependencies, current work, completion, verification state, or when generating an HTML board. Triggers on: workflow-status, workflow board, kanban, 状态看板, 工作流状态."
+description: "View or generate a goal-workflow dashboard. Use when inspecting .workflow issues, priorities, dependencies, current work, completion, verification state, SPEC traceability, or when generating an HTML board. Triggers on: workflow-status, workflow board, kanban, 状态看板, 工作流状态."
 user-invocable: true
 ---
 
-# workflow-status — Workflow Status Board
+# workflow-status — Workflow Status Dashboard
 
-Aggregate `.workflow/` artifacts into a terminal status board by default. With `--html`, generate a GitHub Project-style local HTML board.
+Aggregate `.workflow/` artifacts into an interactive HTML dashboard by default. Use `--shell` when a compact terminal board is needed.
+
+Use `workflow-status.py` in this skill directory for terminal, HTML, and watch mode generation instead of reimplementing parsing logic inline.
 
 ---
 
 ## The Job
 
 1. **Locate Workflow Root** — default to `.workflow/`, or use `--dir <path>`.
-2. **Build Board Data** — parse issues, dependencies, progress, notes, and verification records.
-3. **Terminal Output** — print a compact issue board and next action.
-4. **HTML Output** — with `--html`, write `.workflow/status/index.html` and `.workflow/status/data.json`.
-5. **Watch Mode** — with `--html --watch`, rebuild the HTML board when workflow files change.
+2. **Build Board Data** — parse issues, dependencies, progress, specs, notes, and verification records.
+3. **HTML Dashboard** — default output writes `.workflow/status/index.html`, `.workflow/status/data.json`, `.workflow/status/markdown.html`, `.workflow/status/markdown-data.json`, `.workflow/status/style.css`, and `.workflow/status/app.js`.
+4. **Terminal Output** — with `--shell`, print a compact issue board and next action.
+5. **Watch Mode** — with `--watch`, rebuild the HTML dashboard when workflow files change.
 
 ---
 
@@ -39,11 +41,24 @@ No .workflow workspace found. Run /workflow-init first.
 
 ## Step 2: Build Board Data
 
+When running inside Claude Code, prefer:
+
+```bash
+python3 <skill-dir>/workflow-status.py [--dir <path>] [--watch]
+```
+
+Use shell mode only when the user explicitly wants terminal output:
+
+```bash
+python3 <skill-dir>/workflow-status.py [--dir <path>] --shell
+```
+
 Read:
 
 ```text
 .workflow/config.json
 .workflow/issues/*.md
+.workflow/specs/*.md
 .workflow/progress/current.md
 .workflow/verification/*.md
 .workflow/notes/*
@@ -55,12 +70,23 @@ Parse each issue from frontmatter when available, otherwise from Markdown sectio
 |---|---|
 | ID | frontmatter `id` or filename |
 | Title | frontmatter `title` or H1 |
+| Description | `## Description` |
 | Priority | frontmatter `priority` or `## Priority` |
 | Type | frontmatter `type` or `## Type` |
 | Dependencies | frontmatter `depends_on` or `## Dependencies` |
 | SPEC reference | `## SPEC Reference` |
 | Checklist | `## Acceptance Criteria` checklist |
-| Verification | matching `.workflow/verification/*issue-id*.md` |
+| Output | `## Output` |
+| Verification | exact matching `.workflow/verification/issue-id*.md` |
+
+Important parsing rules:
+
+- Preserve letter-suffixed issue IDs such as `issue-007a` and `issue-011a`.
+- Normalize dependency references:
+  - `#11`, `#011`, `issue-011` → `issue-011`
+  - `#011a`, `issue-011a` → `issue-011a`
+- Deduplicate dependencies and blockers.
+- Verification matching must be exact by issue token. `issue-011-*.md` must not match `issue-011a`.
 
 Status rules:
 
@@ -70,7 +96,7 @@ Status rules:
 | `In Progress` | frontmatter `status: in_progress` or current progress points to the issue |
 | `Blocked` | dependencies are missing or incomplete |
 | `Review` | done but review/ship is pending when that signal exists |
-| `Todo` | default incomplete state |
+| `Todo` / `Ready next` | dependency-free incomplete issue |
 
 Verification states:
 
@@ -79,17 +105,101 @@ Verification states:
 | `passed` | latest verification says completion decision is yes or passed |
 | `failed` | latest verification command failed or says incomplete |
 | `missing` | issue is done or verification-required but no verification exists |
-| `not-required` | documentation-only or explicitly marked not required |
+| `not-required` | incomplete issue without verification yet, or documentation-only work |
 | `pending` | current issue has verification work in progress |
 
 ---
 
-## Step 3: Terminal Output
+## Step 3: HTML Dashboard
 
 Default command:
 
 ```text
 /workflow-status
+```
+
+Equivalent script call:
+
+```bash
+python3 <skill-dir>/workflow-status.py
+```
+
+Write generated files:
+
+```text
+.workflow/status/index.html
+.workflow/status/data.json
+.workflow/status/markdown.html
+.workflow/status/markdown-data.json
+.workflow/status/style.css
+.workflow/status/app.js
+```
+
+Dashboard behavior:
+
+- Render a workflow cockpit optimized for execution decisions, not a decorative AI dashboard.
+- Focus view is the default and orders columns as `Blocked`, `Ready next`, `In Progress`, `Review`; `Done` is hidden in Focus.
+- Kanban view shows workflow flow as `Todo`, `In Progress`, `Review`, `Done`; blocked work remains filterable and visibly marked.
+- Top bar shows workflow identity and a right-aligned persisted theme selector with Default, Dark, GitHub, Nord, and Solarized styles.
+- Cards open an in-page detail drawer instead of navigating away to raw markdown.
+- Drawer is action-first: Action, Summary, Acceptance Criteria, Dependencies, SPEC Traceability, Verification Evidence, Output, and UTF-8 markdown viewer fallback.
+- Drawer Action shows the recommended executable `/goal` command for the selected issue.
+- Provide filters for search, view mode, priority, type, verification, and hide/show Done.
+- Parse SPEC section headings from `.workflow/specs/*.md`, but do not show the full SPEC section list as the primary navigation.
+- Workflow Navigation groups workflow state into Execution, Traceability, and Health.
+- Traceability groups aggregate related SPEC sections into route-map categories such as Runtime / Shell, Deployment Migration, Validation & Evidence, Platform Evolution, and UI Foundation.
+- Use an engineering console style: neutral background, compact cards, low decoration, and color only for meaningful states.
+
+`data.json` shape includes summary, health, recommended next, view-specific columns, traceability groups, issue detail fields, verification files, and SPEC section metadata:
+
+```json
+{
+  "workflow": "workflow-name",
+  "updatedAt": "2026-05-31T12:00:00+08:00",
+  "summary": {
+    "total": 30,
+    "ready": 6,
+    "blocked": 8,
+    "done": 16,
+    "verificationMissing": 0
+  },
+  "health": {
+    "blocked": 8,
+    "ready": 6,
+    "verificationMissing": 0,
+    "missingDependencies": 0
+  },
+  "recommendedNext": {
+    "id": "issue-011b",
+    "suggestedCommand": "/goal .workflow/issues/issue-011b-deployment-create-form.md"
+  },
+  "views": {
+    "focus": [
+      { "id": "blocked", "title": "Blocked", "cards": [] },
+      { "id": "todo", "title": "Ready next", "cards": [] },
+      { "id": "inProgress", "title": "In Progress", "cards": [] },
+      { "id": "review", "title": "Review", "cards": [] }
+    ],
+    "kanban": [
+      { "id": "todo", "title": "Todo", "cards": [] },
+      { "id": "inProgress", "title": "In Progress", "cards": [] },
+      { "id": "review", "title": "Review", "cards": [] },
+      { "id": "done", "title": "Done", "cards": [] }
+    ]
+  },
+  "traceabilityGroups": [],
+  "specSections": []
+}
+```
+
+---
+
+## Step 4: Terminal Output
+
+Command:
+
+```text
+/workflow-status --shell
 ```
 
 Output format:
@@ -101,79 +211,20 @@ Updated: 2026-05-28 14:32
 
 Summary:
 - Issues: 8 total / 4 done / 1 in progress / 3 todo
+- Ready: 2
 - Blocked: 0
 - Verification missing: 2
 - Next issue: issue-005-unreachable-branch-rules.md
 
 Todo
   [high][infra] issue-005 固化不可达分支处理规则
-    depends: issue-004 ✓
-    verification: missing
+    acceptance: 0/6; depends: issue-004; verification: missing
 
-In Progress
-  [high][infra] issue-008 按新规则执行下一批 P1 focused coverage
-    verification: pending
-
-Done
-  [high][infra] issue-003 回填当前 P1 Secret batch 文档
-    verification: passed
-```
-
-Always include a recommended next command when a pending issue exists:
-
-```text
 Suggested next step:
   /goal .workflow/issues/issue-005-unreachable-branch-rules.md
 ```
 
----
-
-## Step 4: HTML Output
-
-Command:
-
-```text
-/workflow-status --html
-```
-
-Write generated files:
-
-```text
-.workflow/status/index.html
-.workflow/status/data.json
-.workflow/status/style.css
-```
-
-HTML board requirements:
-
-- Render columns: `Todo`, `In Progress`, `Blocked`, `Review`, `Done`.
-- Render issue cards with ID, title, priority, type, completion ratio, dependencies, and verification state.
-- Use the visual style already used by goal-workflow docs: warm background, soft cards, small badges.
-- Link each card to its local issue file path when possible.
-
-`data.json` shape:
-
-```json
-{
-  "workflow": "testing-coverage-governance",
-  "updatedAt": "2026-05-28T14:32:00+08:00",
-  "summary": {
-    "total": 8,
-    "todo": 3,
-    "inProgress": 1,
-    "blocked": 0,
-    "done": 4,
-    "verificationMissing": 2
-  },
-  "columns": [
-    {
-      "id": "todo",
-      "title": "Todo",
-      "cards": []
-    }
-  ]
-}
-```
+Always include a recommended next command when a pending issue exists.
 
 ---
 
@@ -182,15 +233,15 @@ HTML board requirements:
 Command:
 
 ```text
-/workflow-status --html --watch
+/workflow-status --watch
 ```
 
 Behavior:
 
-- Rebuild `.workflow/status/index.html` and `.workflow/status/data.json` when workflow files change.
-- First version may use polling every 5 seconds.
+- Rebuild `.workflow/status/index.html`, `.workflow/status/data.json`, `.workflow/status/markdown.html`, `.workflow/status/markdown-data.json`, `.workflow/status/style.css`, and `.workflow/status/app.js` when workflow files change.
 - Watch these paths:
   - `.workflow/issues/`
+  - `.workflow/specs/`
   - `.workflow/progress/`
   - `.workflow/verification/`
   - `.workflow/notes/`
@@ -201,7 +252,7 @@ Print rebuild events:
 ```text
 Watching .workflow/...
 [14:32:10] rebuilt .workflow/status/index.html
-[14:32:25] issue-005 changed, rebuilt
+[14:32:25] workflow changed, rebuilt .workflow/status/index.html
 ```
 
 ---
@@ -215,7 +266,7 @@ Watching .workflow/...
 | Issue lacks metadata | Parse H1 and known sections best-effort |
 | Dependency refers to missing issue | Put card in `Blocked` and show warning |
 | Done issue has missing verification | Show `verification: missing`; do not hide completion |
-| `--watch` without `--html` | Ask to add `--html` or refresh terminal periodically |
+| User asks for terminal view | Use `--shell` |
 | Existing generated files | Overwrite only files under `.workflow/status/` |
 
 ---
