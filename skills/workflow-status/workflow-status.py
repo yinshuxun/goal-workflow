@@ -2,11 +2,17 @@
 from __future__ import annotations
 
 import argparse
+import functools
 import html
+import http.server
 import json
+import os
 import re
+import socket
+import socketserver
 import sys
 import time
+import webbrowser
 from datetime import datetime, timedelta, timezone
 from urllib.parse import quote
 from pathlib import Path
@@ -609,40 +615,87 @@ def snapshot(paths: list[Path]) -> tuple:
     return tuple(sorted(values))
 
 
+def first_available_port(start: int) -> int:
+    for port in range(start, start + 100):
+        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as probe:
+            probe.setsockopt(socket.SOL_SOCKET, socket.SO_REUSEADDR, 1)
+            try:
+                probe.bind(('127.0.0.1', port))
+            except OSError:
+                continue
+            return port
+    raise SystemExit(f'No available port found from {start} to {start + 99}.')
+
+
+class ReusableTCPServer(socketserver.TCPServer):
+    allow_reuse_address = True
+
+
+def serve_dashboard(root: Path, port: int, open_browser: bool, watch: bool) -> None:
+    actual_port = first_available_port(port)
+    url = f'http://127.0.0.1:{actual_port}/status/index.html'
+    handler = functools.partial(http.server.SimpleHTTPRequestHandler, directory=str(root))
+    with ReusableTCPServer(('127.0.0.1', actual_port), handler) as server:
+        print(f'Serving {root} at {url}')
+        if open_browser:
+            webbrowser.open(url)
+        if watch:
+            server.timeout = 1
+            run_watch(root, server)
+        else:
+            try:
+                server.serve_forever()
+            except KeyboardInterrupt:
+                print('\nStopped workflow dashboard server.')
+
+
+def run_watch(root: Path, server: ReusableTCPServer) -> None:
+    watch_paths = [root / 'issues', root / 'progress', root / 'verification', root / 'notes', root / 'config.json', root / 'specs']
+    print('Watching .workflow/...')
+    print(f"[{datetime.now(TZ).strftime('%H:%M:%S')}] rebuilt .workflow/status/index.html")
+    last = snapshot(watch_paths)
+    try:
+        while True:
+            server.handle_request()
+            current = snapshot(watch_paths)
+            if current == last:
+                continue
+            last = current
+            write_html(root, build_data(root))
+            print(f"[{datetime.now(TZ).strftime('%H:%M:%S')}] workflow changed, rebuilt .workflow/status/index.html", flush=True)
+    except KeyboardInterrupt:
+        print('\nStopped workflow dashboard server.')
+
+
 def main() -> int:
     parser = argparse.ArgumentParser(description='Generate goal-workflow status board')
     parser.add_argument('--dir')
     parser.add_argument('--html', action='store_true', help='Generate HTML dashboard. This is the default.')
     parser.add_argument('--shell', action='store_true', help='Print terminal status instead of generating HTML.')
-    parser.add_argument('--watch', action='store_true')
+    parser.add_argument('--watch', action='store_true', help='Rebuild the served dashboard when workflow files change.')
+    parser.add_argument('--no-open', action='store_true', help='Do not open the dashboard in the default browser.')
+    parser.add_argument('--no-serve', action='store_true', help='Only generate dashboard files without starting a local server.')
+    parser.add_argument('--port', type=int, default=int(os.environ.get('WORKFLOW_STATUS_PORT', '8766')))
     args = parser.parse_args()
 
     if args.watch and args.shell:
         raise SystemExit('--watch cannot be combined with --shell')
+    if args.shell and (args.no_open or args.no_serve):
+        raise SystemExit('--shell cannot be combined with --no-open or --no-serve')
 
     root = resolve_root(Path.cwd(), args.dir)
     data = build_data(root)
     if args.shell:
         print_terminal(root, data)
-    else:
-        write_html(root, data)
-        print(f'Generated {root / "status" / "index.html"}')
-
-    if not args.watch:
         return 0
 
-    watch_paths = [root / 'issues', root / 'progress', root / 'verification', root / 'notes', root / 'config.json', root / 'specs']
-    print('Watching .workflow/...')
-    print(f"[{datetime.now(TZ).strftime('%H:%M:%S')}] rebuilt .workflow/status/index.html")
-    last = snapshot(watch_paths)
-    while True:
-        time.sleep(5)
-        current = snapshot(watch_paths)
-        if current == last:
-            continue
-        last = current
-        write_html(root, build_data(root))
-        print(f"[{datetime.now(TZ).strftime('%H:%M:%S')}] workflow changed, rebuilt .workflow/status/index.html", flush=True)
+    write_html(root, data)
+    print(f'Generated {root / "status" / "index.html"}')
+    if args.no_serve:
+        return 0
+
+    serve_dashboard(root, args.port, not args.no_open, args.watch)
+    return 0
 
 
 MARKDOWN_HTML = r'''<!doctype html>

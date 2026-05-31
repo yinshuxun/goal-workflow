@@ -16,9 +16,9 @@ Use `workflow-status.py` in this skill directory for terminal, HTML, and watch m
 
 1. **Locate Workflow Root** — default to `.workflow/`, or use `--dir <path>`.
 2. **Build Board Data** — parse issues, dependencies, progress, specs, notes, and verification records.
-3. **HTML Dashboard** — default output writes `.workflow/status/index.html`, `.workflow/status/data.json`, `.workflow/status/markdown.html`, `.workflow/status/markdown-data.json`, `.workflow/status/style.css`, and `.workflow/status/app.js`.
+3. **HTML Dashboard** — default output writes `.workflow/status/index.html`, `.workflow/status/data.json`, `.workflow/status/markdown.html`, `.workflow/status/markdown-data.json`, `.workflow/status/style.css`, and `.workflow/status/app.js`, serves `.workflow/` locally, and opens `/status/index.html` in the default browser.
 4. **Terminal Output** — with `--shell`, print a compact issue board and next action.
-5. **Watch Mode** — with `--watch`, rebuild the HTML dashboard when workflow files change.
+5. **Watch Mode** — with `--watch`, serve the dashboard and rebuild it when workflow files change.
 
 ---
 
@@ -122,6 +122,21 @@ Equivalent script call:
 
 ```bash
 python3 <skill-dir>/workflow-status.py
+```
+
+Default behavior:
+
+- Generate dashboard files.
+- Serve the workflow root locally, defaulting to `127.0.0.1:8766` and trying the next available port when occupied.
+- Open `http://127.0.0.1:<port>/status/index.html` in the default browser.
+- Keep the local server running until interrupted.
+
+Useful options:
+
+```bash
+python3 <skill-dir>/workflow-status.py --no-open
+python3 <skill-dir>/workflow-status.py --no-serve
+python3 <skill-dir>/workflow-status.py --port 8766
 ```
 
 Write generated files:
@@ -238,6 +253,7 @@ Command:
 
 Behavior:
 
+- Serve `.workflow/` locally and open the dashboard unless `--no-open` is provided.
 - Rebuild `.workflow/status/index.html`, `.workflow/status/data.json`, `.workflow/status/markdown.html`, `.workflow/status/markdown-data.json`, `.workflow/status/style.css`, and `.workflow/status/app.js` when workflow files change.
 - Watch these paths:
   - `.workflow/issues/`
@@ -250,6 +266,7 @@ Behavior:
 Print rebuild events:
 
 ```text
+Serving .workflow at http://127.0.0.1:8766/status/index.html
 Watching .workflow/...
 [14:32:10] rebuilt .workflow/status/index.html
 [14:32:25] workflow changed, rebuilt .workflow/status/index.html
@@ -267,6 +284,9 @@ Watching .workflow/...
 | Dependency refers to missing issue | Put card in `Blocked` and show warning |
 | Done issue has missing verification | Show `verification: missing`; do not hide completion |
 | User asks for terminal view | Use `--shell` |
+| User wants generated files only | Use `--no-serve` |
+| User wants server without browser launch | Use `--no-open` |
+| Preferred port is occupied | Try the next available port automatically |
 | Existing generated files | Overwrite only files under `.workflow/status/` |
 
 ---
