@@ -26,7 +26,7 @@ npx skills add smallnest/goal-workflow
 | `/prd` | Generate PRD (requirements document) |
 | `/prd-to-spec` | Transform PRD into technical SPEC (optional) |
 | `/to-issues` | Decompose PRD/SPEC into Issues and create tickets |
-| `/workflow-status` | View terminal status or generate an HTML workflow board |
+| `/workflow-status` | Serve the interactive workflow dashboard locally and open it in the default browser; use `--shell` for terminal output |
 | `/goal` | Implement an Issue end-to-end (Claude Code built-in) |
 | `/verify-it` | Capture fresh verification evidence for an Issue |
 | `/progress-it` | Update durable progress, history, and workflow index records |

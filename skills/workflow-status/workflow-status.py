@@ -28,11 +28,6 @@ COLUMN_ORDER = [
 ISSUE_TOKEN_RE = re.compile(r'^(\d{1,4})([a-z]?)$', re.I)
 FOCUS_COLUMNS = [
     ('blocked', 'Blocked'),
-    ('todo', 'Ready next'),
-    ('inProgress', 'In Progress'),
-    ('review', 'Review'),
-]
-KANBAN_COLUMNS = [
     ('todo', 'Todo'),
     ('inProgress', 'In Progress'),
     ('review', 'Review'),
@@ -387,7 +382,6 @@ def build_data(root: Path) -> dict:
         'columns': columns,
         'views': {
             'focus': view_columns(by_column, FOCUS_COLUMNS),
-            'kanban': view_columns(by_column, KANBAN_COLUMNS),
         },
         'traceabilityGroups': traceability_groups(issues),
         'specSections': spec_sections,
@@ -507,23 +501,22 @@ def render_html(data: dict) -> str:
       <h1>{html.escape(data['workflow'])}</h1>
       <div class="meta">Root: .workflow/ · Updated: {html.escape(updated)}</div>
     </div>
-    <label class="theme-control">Theme<select id="themeMode"><option value="default">Default</option><option value="dark">Dark</option><option value="github">GitHub</option><option value="nord">Nord</option><option value="solarized">Solarized</option></select></label>
+    <div class="dropdown-filter theme-control"><span>Theme</span><button id="themeButton" type="button" aria-haspopup="true" aria-expanded="false"></button><div id="themeMenu" class="filter-menu" hidden></div></div>
   </header>
   <section class="summary">
     {metric('Total', summary['total'])}
     {metric('Blocked', summary['blocked'])}
-    {metric('Ready', summary['ready'])}
+    {metric('Todo', summary['ready'])}
     {metric('In Progress', summary['inProgress'])}
     {metric('Review', summary['review'])}
     {metric('Done', summary['done'])}
   </section>
   <section class="toolbar" aria-label="Workflow filters">
     <label>Search<input id="searchInput" type="search" placeholder="Issue, title, description" /></label>
-    <label>View<select id="viewMode"><option value="focus">Focus</option><option value="kanban">Kanban</option></select></label>
-    <label>Priority<select id="priorityFilter"><option value="all">All</option></select></label>
-    <label>Type<select id="typeFilter"><option value="all">All</option></select></label>
-    <label>Verification<select id="verificationFilter"><option value="all">All</option></select></label>
-    <label class="check"><input id="hideDone" type="checkbox" checked /> Hide done</label>
+    <div class="dropdown-filter"><span>Priority</span><button id="priorityButton" type="button" aria-haspopup="true" aria-expanded="false"></button><div id="priorityMenu" class="filter-menu" hidden></div></div>
+    <div class="dropdown-filter"><span>Type</span><button id="typeButton" type="button" aria-haspopup="true" aria-expanded="false"></button><div id="typeMenu" class="filter-menu" hidden></div></div>
+    <div class="dropdown-filter"><span>Verification</span><button id="verificationButton" type="button" aria-haspopup="true" aria-expanded="false"></button><div id="verificationMenu" class="filter-menu" hidden></div></div>
+    <div class="dropdown-filter"><span>Columns</span><button id="columnFilterButton" type="button" aria-haspopup="true" aria-expanded="false"></button><div id="columnFilter" class="filter-menu" hidden></div></div>
   </section>
   <main class="layout">
     <aside class="navigator" aria-label="Workflow navigation">
@@ -750,18 +743,25 @@ APP_JS = r"""
 const allCards = WORKFLOW_DATA.columns.flatMap((column) => column.cards);
 const cardsById = Object.fromEntries(allCards.map((card) => [card.id, card]));
 const validThemes = new Set(['default', 'dark', 'github', 'nord', 'solarized']);
+const allColumnIds = WORKFLOW_DATA.views.focus.map((column) => column.id);
 const storedTheme = localStorage.getItem('workflow-status-theme');
-const state = { query: '', view: 'focus', theme: validThemes.has(storedTheme) ? storedTheme : 'default', priority: 'all', type: 'all', verification: 'all', nav: 'all', hideDone: true };
+const storedColumns = JSON.parse(localStorage.getItem('workflow-status-columns') || 'null');
+const visibleColumns = Array.isArray(storedColumns) ? storedColumns.filter((id) => allColumnIds.includes(id)) : allColumnIds;
+const state = { query: '', theme: validThemes.has(storedTheme) ? storedTheme : 'default', priority: 'all', type: 'all', verification: 'all', nav: 'all', columns: visibleColumns.length ? visibleColumns : allColumnIds };
 
 const els = {
   board: document.querySelector('#board'),
   search: document.querySelector('#searchInput'),
-  view: document.querySelector('#viewMode'),
-  theme: document.querySelector('#themeMode'),
-  priority: document.querySelector('#priorityFilter'),
-  type: document.querySelector('#typeFilter'),
-  verification: document.querySelector('#verificationFilter'),
-  hideDone: document.querySelector('#hideDone'),
+  theme: document.querySelector('#themeMenu'),
+  themeButton: document.querySelector('#themeButton'),
+  priority: document.querySelector('#priorityMenu'),
+  priorityButton: document.querySelector('#priorityButton'),
+  type: document.querySelector('#typeMenu'),
+  typeButton: document.querySelector('#typeButton'),
+  verification: document.querySelector('#verificationMenu'),
+  verificationButton: document.querySelector('#verificationButton'),
+  columnFilter: document.querySelector('#columnFilter'),
+  columnFilterButton: document.querySelector('#columnFilterButton'),
   executionNav: document.querySelector('#executionNav'),
   traceabilityNav: document.querySelector('#traceabilityNav'),
   healthNav: document.querySelector('#healthNav'),
@@ -780,14 +780,60 @@ function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
 }
 
-function option(value, label) {
-  return `<option value="${escapeHtml(value)}">${escapeHtml(label)}</option>`;
+function optionButton(group, value, label, active) {
+  return `<button type="button" class="filter-option ${active ? 'active' : ''}" data-group="${escapeHtml(group)}" data-value="${escapeHtml(value)}">${escapeHtml(label)}</button>`;
 }
 
 function fillFilters() {
-  for (const priority of uniq(allCards.map((card) => card.priority))) els.priority.insertAdjacentHTML('beforeend', option(priority, priority));
-  for (const type of uniq(allCards.map((card) => card.type))) els.type.insertAdjacentHTML('beforeend', option(type, type));
-  for (const verification of uniq(allCards.map((card) => card.verification))) els.verification.insertAdjacentHTML('beforeend', option(verification, verification));
+  renderSingleSelect('theme', els.theme, els.themeButton, [
+    ['default', 'Default'],
+    ['dark', 'Dark'],
+    ['github', 'GitHub'],
+    ['nord', 'Nord'],
+    ['solarized', 'Solarized'],
+  ]);
+  renderSingleSelect('priority', els.priority, els.priorityButton, [['all', 'All'], ...uniq(allCards.map((card) => card.priority)).map((value) => [value, value])]);
+  renderSingleSelect('type', els.type, els.typeButton, [['all', 'All'], ...uniq(allCards.map((card) => card.type)).map((value) => [value, value])]);
+  renderSingleSelect('verification', els.verification, els.verificationButton, [['all', 'All'], ...uniq(allCards.map((card) => card.verification)).map((value) => [value, value])]);
+  els.columnFilter.innerHTML = WORKFLOW_DATA.views.focus.map((column) => `<label><input type="checkbox" value="${escapeHtml(column.id)}" ${state.columns.includes(column.id) ? 'checked' : ''} /> ${escapeHtml(column.title)}</label>`).join('');
+  els.columnFilter.querySelectorAll('input[type="checkbox"]').forEach((input) => input.addEventListener('change', updateVisibleColumns));
+  updateColumnFilterLabel();
+}
+
+function renderSingleSelect(group, menu, button, options) {
+  const selected = options.find(([value]) => value === state[group]) || options[0];
+  button.textContent = selected[1];
+  menu.innerHTML = options.map(([value, label]) => optionButton(group, value, label, value === state[group])).join('');
+}
+
+function updateVisibleColumns() {
+  const nextColumns = [...els.columnFilter.querySelectorAll('input[type="checkbox"]:checked')].map((input) => input.value);
+  state.columns = nextColumns.length ? nextColumns : [];
+  localStorage.setItem('workflow-status-columns', JSON.stringify(state.columns));
+  updateColumnFilterLabel();
+  render();
+}
+
+function updateColumnFilterLabel() {
+  const selected = WORKFLOW_DATA.views.focus.filter((column) => state.columns.includes(column.id));
+  els.columnFilterButton.textContent = selected.length === allColumnIds.length ? 'All columns' : `${selected.length} selected`;
+}
+
+function setMenuOpen(menu, button, open) {
+  menu.hidden = !open;
+  button.setAttribute('aria-expanded', String(open));
+}
+
+function closeMenus(exceptMenu = null) {
+  for (const [menu, button] of [[els.theme, els.themeButton], [els.priority, els.priorityButton], [els.type, els.typeButton], [els.verification, els.verificationButton], [els.columnFilter, els.columnFilterButton]]) {
+    if (menu !== exceptMenu) setMenuOpen(menu, button, false);
+  }
+}
+
+function toggleMenu(menu, button) {
+  const open = menu.hidden;
+  closeMenus(menu);
+  setMenuOpen(menu, button, open);
 }
 
 function setNav(value) {
@@ -802,12 +848,13 @@ function navButton(value, label, count, detail = '') {
 }
 
 function renderNavigation() {
-  const counts = Object.fromEntries(['blocked', 'todo', 'inProgress', 'review'].map((status) => [status, allCards.filter((card) => card.status === status).length]));
+  const counts = Object.fromEntries(['blocked', 'todo', 'inProgress', 'review', 'done'].map((status) => [status, allCards.filter((card) => card.status === status).length]));
   els.executionNav.innerHTML = [
     navButton('status:blocked', 'Blocked', counts.blocked, 'Resolve bottlenecks first'),
-    navButton('status:todo', 'Ready next', counts.todo, 'Ready to execute'),
+    navButton('status:todo', 'Todo', counts.todo, 'Ready to execute'),
     navButton('status:inProgress', 'In Progress', counts.inProgress, 'Currently active'),
     navButton('status:review', 'Review', counts.review, 'Needs closeout'),
+    navButton('status:done', 'Done', counts.done, 'Completed work'),
   ].join('');
 
   els.traceabilityNav.innerHTML = WORKFLOW_DATA.traceabilityGroups.map((group) =>
@@ -841,8 +888,7 @@ function cardMatchesNav(card) {
 function filteredCards() {
   const query = state.query.trim().toLowerCase();
   return allCards.filter((card) => {
-    if (state.view === 'focus' && card.status === 'done') return false;
-    if (state.view === 'kanban' && state.hideDone && card.status === 'done') return false;
+    if (!state.columns.includes(card.status)) return false;
     if (state.priority !== 'all' && card.priority !== state.priority) return false;
     if (state.type !== 'all' && card.type !== state.type) return false;
     if (state.verification !== 'all' && card.verification !== state.verification) return false;
@@ -856,12 +902,11 @@ function filteredCards() {
 }
 
 function activeViewColumns() {
-  return WORKFLOW_DATA.views[state.view] || WORKFLOW_DATA.views.focus;
+  return WORKFLOW_DATA.views.focus.filter((column) => state.columns.includes(column.id));
 }
 
 function applyTheme() {
   document.documentElement.dataset.theme = state.theme === 'default' ? '' : state.theme;
-  els.theme.value = state.theme;
   localStorage.setItem('workflow-status-theme', state.theme);
 }
 
@@ -870,9 +915,8 @@ function render() {
   renderNavigation();
   const cards = filteredCards();
   const columns = activeViewColumns();
-  els.hideDone.disabled = state.view === 'focus';
   els.board.style.gridTemplateColumns = `repeat(${Math.max(1, columns.length)}, minmax(260px, 1fr))`;
-  els.board.innerHTML = columns.map((column) => renderColumn(column.title, cards.filter((card) => card.status === column.id))).join('');
+  els.board.innerHTML = columns.length ? columns.map((column) => renderColumn(column.title, cards.filter((card) => card.status === column.id))).join('') : '<div class="empty-board">No columns selected</div>';
   els.board.querySelectorAll('[data-card-id]').forEach((button) => button.addEventListener('click', () => openDrawer(button.dataset.cardId)));
 }
 
@@ -942,12 +986,22 @@ function closeDrawer() {
 document.querySelector('#closeDrawer').addEventListener('click', closeDrawer);
 els.drawerBackdrop.addEventListener('click', closeDrawer);
 els.search.addEventListener('input', () => { state.query = els.search.value; render(); });
-els.view.addEventListener('change', () => { state.view = els.view.value; render(); });
-els.theme.addEventListener('change', () => { state.theme = els.theme.value; render(); });
-els.priority.addEventListener('change', () => { state.priority = els.priority.value; render(); });
-els.type.addEventListener('change', () => { state.type = els.type.value; render(); });
-els.verification.addEventListener('change', () => { state.verification = els.verification.value; render(); });
-els.hideDone.addEventListener('change', () => { state.hideDone = els.hideDone.checked; render(); });
+els.themeButton.addEventListener('click', () => toggleMenu(els.theme, els.themeButton));
+els.priorityButton.addEventListener('click', () => toggleMenu(els.priority, els.priorityButton));
+els.typeButton.addEventListener('click', () => toggleMenu(els.type, els.typeButton));
+els.verificationButton.addEventListener('click', () => toggleMenu(els.verification, els.verificationButton));
+els.columnFilterButton.addEventListener('click', () => toggleMenu(els.columnFilter, els.columnFilterButton));
+document.addEventListener('click', (event) => {
+  if (!event.target.closest('.dropdown-filter')) closeMenus();
+});
+document.addEventListener('click', (event) => {
+  const option = event.target.closest('.filter-option');
+  if (!option) return;
+  state[option.dataset.group] = option.dataset.value;
+  closeMenus();
+  fillFilters();
+  render();
+});
 
 fillFilters();
 render();
@@ -1059,21 +1113,8 @@ a:hover { text-decoration: underline; }
 .eyebrow { margin: 0 0 4px; color: var(--muted); text-transform: uppercase; letter-spacing: 0.08em; font-size: 11px; font-weight: 700; }
 h1 { margin: 0 0 4px; font-size: 22px; font-weight: 650; }
 .meta, .muted { color: var(--muted); font-size: 12px; }
-.theme-control {
-  display: grid;
-  gap: 4px;
-  min-width: 160px;
-  color: var(--muted);
-  font-size: 12px;
-  justify-self: end;
-}
-.theme-control select {
-  border: 1px solid var(--border);
-  border-radius: 6px;
-  background: var(--panel);
-  color: var(--text);
-  padding: 6px 8px;
-}
+.theme-control { min-width: 160px; justify-self: end; }
+.theme-control .filter-menu { left: auto; right: 0; }
 pre {
   border: 1px solid var(--border);
   background: var(--panel-soft);
@@ -1111,12 +1152,12 @@ button { cursor: pointer; }
   border: 1px solid var(--border);
   border-radius: 8px;
   display: grid;
-  grid-template-columns: minmax(220px, 1.2fr) repeat(4, minmax(130px, 1fr)) auto;
+  grid-template-columns: minmax(220px, 1.2fr) repeat(3, minmax(130px, 1fr)) minmax(320px, 1.6fr);
   gap: 8px;
   align-items: end;
 }
 .toolbar label { display: grid; gap: 4px; color: var(--muted); font-size: 12px; }
-.toolbar input, .toolbar select {
+.toolbar input, .dropdown-filter > button {
   width: 100%;
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -1124,8 +1165,43 @@ button { cursor: pointer; }
   color: var(--text);
   padding: 6px 8px;
 }
-.toolbar .check { display: flex; align-items: center; color: var(--text); padding-bottom: 6px; }
-.toolbar .check input { width: auto; }
+.dropdown-filter {
+  position: relative;
+  display: grid;
+  gap: 4px;
+  color: var(--muted);
+  font-size: 12px;
+}
+.dropdown-filter > button { text-align: left; }
+.dropdown-filter > button::after { content: '▾'; float: right; color: var(--muted); }
+.filter-menu {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  z-index: 3;
+  min-width: 220px;
+  max-height: 320px;
+  overflow: auto;
+  padding: 6px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  box-shadow: 0 12px 24px var(--shadow);
+}
+.filter-menu label, .filter-option {
+  width: 100%;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 7px 8px;
+  color: var(--text);
+  border: 0;
+  border-radius: 6px;
+  background: transparent;
+}
+.filter-menu label:hover, .filter-option:hover, .filter-option.active { background: var(--panel-soft); }
+.filter-option.active { color: var(--blue); font-weight: 650; }
+.filter-menu input { width: auto; }
 .layout { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 12px; padding: 0 24px 24px; }
 .navigator {
   align-self: start;
@@ -1163,6 +1239,7 @@ button { cursor: pointer; }
 .nav-item strong { font-size: 12px; color: var(--muted); }
 .nav-item small { grid-column: 1 / -1; color: var(--muted); font-size: 11px; }
 .board { display: grid; gap: 12px; overflow-x: auto; align-items: start; }
+.empty-board { grid-column: 1 / -1; color: var(--muted); background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 24px; }
 .column { min-height: 360px; }
 .column h2 { display: flex; justify-content: space-between; align-items: center; }
 .column h2 span { color: var(--muted); font-size: 12px; }

@@ -513,7 +513,7 @@
         <li><a href="#step-prd">5. Step 1: /prd — 需求规划</a></li>
         <li><a href="#step-prd-to-spec">6. Step 1.5: /prd-to-spec — PRD 转技术方案</a></li>
         <li><a href="#step-to-issues">7. Step 1.6: /to-issues — 拆解 Issue 卡片</a></li>
-        <li><a href="#step-workflow-status">8. Step 1.7: /workflow-status — 状态看板</a></li>
+        <li><a href="#step-workflow-status">8. Step 1.7: /workflow-status — Dashboard</a></li>
         <li><a href="#step-goal">9. Step 2: /goal — 功能实现</a></li>
         <li><a href="#step-verify-it">10. Step 2.5: /verify-it — 验证记录</a></li>
         <li><a href="#step-progress-it">11. Step 2.6: /progress-it — 进展台账</a></li>
@@ -570,7 +570,7 @@
           <ul>
             <li>澄清问题 → 结构化 PRD</li>
             <li>拆解为独立可实施的 Issue</li>
-            <li>支持 GitHub / Local / iCafe</li>
+            <li>支持 GitHub / Local</li>
           </ul>
         </div>
         <div class="card">
@@ -593,7 +593,7 @@
           <p>拆解 PRD/SPEC 为 Issue 卡片</p>
           <ul>
             <li>User Stories → 可实施的 Issue</li>
-            <li>支持 GitHub / Local / iCafe</li>
+            <li>支持 GitHub / Local</li>
             <li>可独立使用，不依赖 /prd</li>
           </ul>
         </div>
@@ -602,11 +602,11 @@
             <div class="card-dot teal"></div>
             <h4>/workflow-status</h4>
           </div>
-          <p>状态摘要 + HTML 看板</p>
+          <p>本地交互式工作流 dashboard</p>
           <ul>
-            <li>终端输出 Issue 分布</li>
-            <li>--html 生成本地看板</li>
+            <li>自动在浏览器打开 dashboard</li>
             <li>展示优先级、依赖和 verification</li>
+            <li>支持 --shell、--watch 和 --no-open</li>
           </ul>
         </div>
         <div class="card">
@@ -1000,7 +1000,7 @@
           <td><span class="badge badge-plan">1.7 状态</span></td>
           <td><code class="inline-code">/workflow-status</code></td>
           <td><code class="inline-code">.workflow/</code> 产物</td>
-          <td>终端状态 / HTML 看板</td>
+          <td>本地交互式 dashboard</td>
         </tr>
         <tr>
           <td><span class="badge badge-impl">2. 实现</span></td>
@@ -1095,7 +1095,7 @@
         <li>展示 PRD 供审阅，确认或调整</li>
         <li>默认保存 PRD 到 <code class="inline-code">.workflow/prds/prd-[feature-name].md</code></li>
         <li>拆解 PRD 为 Issue 列表，展示供确认</li>
-        <li>选择创建模式（GitHub / Local / Baidu iCafe）并创建 Issue</li>
+        <li>选择创建模式（GitHub / Local）并创建 Issue</li>
       </ul>
 
       <h3>输出示例</h3>
@@ -1210,14 +1210,14 @@
         <tr><th>平台</th><th>工具</th><th>说明</th></tr>
         <tr><td>GitHub</td><td><code class="inline-code">gh issue create</code></td><td>需要 gh CLI 认证</td></tr>
         <tr><td>Local</td><td>Markdown 文件</td><td>默认保存到 <code class="inline-code">.workflow/issues/</code>，也支持自定义目录</td></tr>
-        <tr><td>Baidu iCafe</td><td><code class="inline-code">icafe-cli</code></td><td>需要 iCafe 空间参数</td></tr>
+        
       </table>
 
       <h3>工作流程</h3>
       <ul class="step-list">
         <li>定位输入文件（自动检测或手动指定 PRD/SPEC）</li>
         <li>拆解为 Issue 列表，展示供用户审阅（可增删改合并）</li>
-        <li>选择创建平台（GitHub / Local / Baidu iCafe）</li>
+        <li>选择创建平台（GitHub / Local）</li>
         <li>逐条创建并输出汇总报告</li>
       </ul>
 
@@ -1230,22 +1230,24 @@
     <div class="section" id="step-workflow-status">
       <div class="section-title">
         <div class="section-dot teal"></div>
-        <h3>8. Step 1.7: /workflow-status — 状态看板</h3>
+        <h3>8. Step 1.7: /workflow-status — Dashboard</h3>
       </div>
       <p>
-        <code class="inline-code">/workflow-status</code> 从 <code class="inline-code">.workflow/</code> 聚合 Issue、优先级、依赖、完成状态和 verification 状态，默认在终端输出状态摘要。
+        <code class="inline-code">/workflow-status</code> 从 <code class="inline-code">.workflow/</code> 聚合 Issue、优先级、依赖、完成状态、SPEC traceability 和 verification 状态，默认生成交互式 dashboard、启动本地服务，并在默认浏览器打开。
       </p>
       <h3>使用方式</h3>
       <pre><code><span class="cmd">/workflow-status</span>
-<span class="cmd">/workflow-status</span> <span class="flag">--html</span>
-<span class="cmd">/workflow-status</span> <span class="flag">--html</span> <span class="flag">--watch</span>
-<span class="cmd">/workflow-status</span> <span class="flag">--json</span></code></pre>
+<span class="cmd">/workflow-status</span> <span class="flag">--shell</span>
+<span class="cmd">/workflow-status</span> <span class="flag">--watch</span>
+<span class="cmd">/workflow-status</span> <span class="flag">--no-open</span>
+<span class="cmd">/workflow-status</span> <span class="flag">--no-serve</span>
+<span class="cmd">/workflow-status</span> <span class="flag">--port</span> <span class="value">8766</span></code></pre>
       <h3>输出</h3>
       <ul class="step-list">
-        <li>终端输出 Todo、In Progress、Blocked、Review、Done 列。</li>
-        <li><code class="inline-code">--html</code> 生成 <code class="inline-code">.workflow/status/index.html</code>。</li>
-        <li><code class="inline-code">--html --watch</code> 定时重建 HTML，看板持续反映最新进展。</li>
-        <li>卡片展示 issue 编号、标题、priority、type、依赖、验收进度和 verification 状态。</li>
+        <li>默认生成 <code class="inline-code">.workflow/status/index.html</code>、<code class="inline-code">data.json</code>、<code class="inline-code">app.js</code>、<code class="inline-code">style.css</code> 和 UTF-8 markdown viewer 文件。</li>
+        <li>默认服务 <code class="inline-code">.workflow/</code>，打开 <code class="inline-code">http://127.0.0.1:&lt;port&gt;/status/index.html</code>。</li>
+        <li><code class="inline-code">--shell</code> 输出终端状态；<code class="inline-code">--watch</code> 在服务运行时持续重建 dashboard。</li>
+        <li>卡片展示 issue 编号、标题、priority、type、依赖、验收进度、SPEC traceability 和 verification 状态。</li>
       </ul>
     </div>
 
@@ -1916,7 +1918,7 @@
         <tr><th>平台</th><th>工具</th><th>说明</th></tr>
         <tr><td>GitHub</td><td><code class="inline-code">gh issue create</code></td><td>需要 gh CLI 认证</td></tr>
         <tr><td>Local</td><td>Markdown 文件</td><td>保存到本地目录</td></tr>
-        <tr><td>Baidu iCafe</td><td><code class="inline-code">icafe-cli</code></td><td>需要 iCafe 空间参数</td></tr>
+        
       </table>
     </div>
 
@@ -1934,7 +1936,7 @@
       <p><code class="inline-code">/goal</code> 是 Claude Code 的内置功能，不需要额外安装。本工作流的 <code class="inline-code">/prd</code> 生成的 Issue 格式与 <code class="inline-code">/goal</code> 的期望输入完全匹配。</p>
 
       <h3>Q: 可以在非 GitHub 项目中使用吗？</h3>
-      <p>可以。<code class="inline-code">/prd</code> 支持将 Issue 保存为本地 Markdown 文件或创建到百度 iCafe。<code class="inline-code">/review-it</code> 只需要本地 git 仓库。<code class="inline-code">/ship-it</code> 目前依赖 GitHub（<code class="inline-code">gh</code> CLI）。</p>
+      <p>可以。<code class="inline-code">/prd</code> 支持将 Issue 保存为本地 Markdown 文件或创建到 GitHub。<code class="inline-code">/review-it</code> 只需要本地 git 仓库。<code class="inline-code">/ship-it</code> 目前依赖 GitHub（<code class="inline-code">gh</code> CLI）。</p>
 
       <h3>Q: /review-it 和手动 code review 的区别？</h3>
       <p><code class="inline-code">/review-it</code> 是自动化的自查（self-review），在提交前发现明显问题。它不替代团队 code review，而是在 PR 创建前提升代码质量，减少 reviewer 需要指出的低级问题。</p>

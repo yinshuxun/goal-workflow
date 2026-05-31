@@ -43,7 +43,7 @@ const requiredSkills = [
       '.workflow/status/markdown.html',
       '.workflow/status/markdown-data.json',
       '.workflow/status/app.js',
-      'Ready next',
+      'Todo',
       'In Progress',
       'Blocked',
       'Done',
@@ -335,12 +335,11 @@ function validateWorkflowStatusBehavior() {
       failures.push(`workflow-status: SPEC reference should be parsed, got ${suffixedDone?.specReferences[0]?.code}`);
     }
     const focusOrder = reviewData.views?.focus?.map((column) => column.id).join(',');
-    if (focusOrder !== 'blocked,todo,inProgress,review') {
-      failures.push(`workflow-status: focus view order should be blocked,todo,inProgress,review, got ${focusOrder}`);
+    if (focusOrder !== 'blocked,todo,inProgress,review,done') {
+      failures.push(`workflow-status: focus view order should be blocked,todo,inProgress,review,done, got ${focusOrder}`);
     }
-    const kanbanOrder = reviewData.views?.kanban?.map((column) => column.id).join(',');
-    if (kanbanOrder !== 'todo,inProgress,review,done') {
-      failures.push(`workflow-status: kanban view order should be todo,inProgress,review,done, got ${kanbanOrder}`);
+    if ('kanban' in (reviewData.views || {})) {
+      failures.push('workflow-status: kanban view should not be emitted');
     }
     if (!reviewData.recommendedNext || reviewData.recommendedNext.id !== 'issue-011b') {
       failures.push(`workflow-status: recommended next should prefer executable ready issue-011b, got ${reviewData.recommendedNext?.id}`);

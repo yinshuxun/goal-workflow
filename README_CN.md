@@ -26,7 +26,7 @@ npx skills add smallnest/goal-workflow
 | `/prd` | 生成 PRD 需求文档 |
 | `/prd-to-spec` | 将 PRD 转化为技术设计方案（可选） |
 | `/to-issues` | 将 PRD/SPEC 拆解为 Issue 并创建卡片 |
-| `/workflow-status` | 查看终端状态或生成 HTML 工作流看板 |
+| `/workflow-status` | 启动本地交互式工作流 dashboard 并在默认浏览器打开；使用 `--shell` 查看终端输出 |
 | `/goal` | 端到端实现 Issue（Claude Code 内置） |
 | `/verify-it` | 为 Issue 记录 fresh verification 证据 |
 | `/progress-it` | 更新长期进展、历史记录和工作流索引 |

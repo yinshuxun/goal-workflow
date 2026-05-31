@@ -513,7 +513,7 @@
         <li><a href="#step-prd">5. Step 1: /prd — Requirements Planning</a></li>
         <li><a href="#step-prd-to-spec">6. Step 1.5: /prd-to-spec — PRD to Technical SPEC</a></li>
         <li><a href="#step-to-issues">7. Step 1.6: /to-issues — Break Down into Issues</a></li>
-        <li><a href="#step-workflow-status">8. Step 1.7: /workflow-status — Status Board</a></li>
+        <li><a href="#step-workflow-status">8. Step 1.7: /workflow-status — Dashboard</a></li>
         <li><a href="#step-goal">9. Step 2: /goal — Feature Implementation</a></li>
         <li><a href="#step-verify-it">10. Step 2.5: /verify-it — Verification Evidence</a></li>
         <li><a href="#step-progress-it">11. Step 2.6: /progress-it — Progress Ledger</a></li>
@@ -570,7 +570,7 @@
           <ul>
             <li>Clarifying questions → structured PRD</li>
             <li>Decomposed into independently implementable Issues</li>
-            <li>Supports GitHub / Local / iCafe</li>
+            <li>Supports GitHub / Local</li>
           </ul>
         </div>
         <div class="card">
@@ -593,7 +593,7 @@
           <p>Break PRD/SPEC into Issue cards</p>
           <ul>
             <li>User Stories → implementable Issues</li>
-            <li>Supports GitHub / Local / iCafe</li>
+            <li>Supports GitHub / Local</li>
             <li>Standalone — does not depend on /prd</li>
           </ul>
         </div>
@@ -602,11 +602,11 @@
             <div class="card-dot amber"></div>
             <h4>/workflow-status</h4>
           </div>
-          <p>Terminal or HTML workflow board</p>
+          <p>Local interactive workflow dashboard</p>
           <ul>
-            <li>Show Issue priority and state</li>
-            <li>Track dependencies and verification</li>
-            <li>Supports --html and --html --watch</li>
+            <li>Opens the dashboard in your browser</li>
+            <li>Tracks dependencies and verification</li>
+            <li>Supports --shell, --watch, and --no-open</li>
           </ul>
         </div>
         <div class="card">
@@ -1000,7 +1000,7 @@
           <td><span class="badge badge-plan">1.7 Status</span></td>
           <td><code class="inline-code">/workflow-status</code></td>
           <td><code class="inline-code">.workflow/</code> artifacts</td>
-          <td>Terminal summary or HTML board</td>
+          <td>Local interactive dashboard</td>
         </tr>
         <tr>
           <td><span class="badge badge-impl">2. Implement</span></td>
@@ -1096,7 +1096,7 @@
         <li>Presents PRD for review; confirm or adjust</li>
         <li>Saves PRD to <code class="inline-code">.workflow/prds/prd-[feature-name].md</code> by default</li>
         <li>Breaks down PRD into Issue list; presents for confirmation</li>
-        <li>Selects creation mode (GitHub / Local / Baidu iCafe) and creates Issues</li>
+        <li>Selects creation mode (GitHub / Local) and creates Issues</li>
       </ul>
 
       <h3>Output Example</h3>
@@ -1211,14 +1211,14 @@
         <tr><th>Platform</th><th>Tool</th><th>Description</th></tr>
         <tr><td>GitHub</td><td><code class="inline-code">gh issue create</code></td><td>Requires gh CLI authentication</td></tr>
         <tr><td>Local</td><td>Markdown files</td><td>Saved to <code class="inline-code">.workflow/issues/</code> by default, or a custom directory</td></tr>
-        <tr><td>Baidu iCafe</td><td><code class="inline-code">icafe-cli</code></td><td>Requires iCafe space parameters</td></tr>
+        
       </table>
 
       <h3>Workflow</h3>
       <ul class="step-list">
         <li>Locate input files (auto-detect or manually specify PRD/SPEC)</li>
         <li>Break down into Issue list; present for user review (can add, remove, edit, merge)</li>
-        <li>Select creation platform (GitHub / Local / Baidu iCafe)</li>
+        <li>Select creation platform (GitHub / Local)</li>
         <li>Create one by one and output summary report</li>
       </ul>
 
@@ -1231,21 +1231,23 @@
     <div class="section" id="step-workflow-status">
       <div class="section-title">
         <div class="section-dot amber"></div>
-        <h3>8. Step 1.7: /workflow-status — Status Board</h3>
+        <h3>8. Step 1.7: /workflow-status — Dashboard</h3>
       </div>
       <p>
-        <code class="inline-code">/workflow-status</code> aggregates Issues, priorities, dependencies, completion state, and verification state from <code class="inline-code">.workflow/</code>. By default it prints a compact terminal summary.
+        <code class="inline-code">/workflow-status</code> aggregates Issues, priorities, dependencies, completion state, SPEC traceability, and verification state from <code class="inline-code">.workflow/</code>. By default it generates the interactive dashboard, starts a local server, and opens it in the default browser.
       </p>
       <h3>Usage</h3>
       <pre><code><span class="cmd">/workflow-status</span>
-<span class="cmd">/workflow-status</span> <span class="flag">--html</span>
-<span class="cmd">/workflow-status</span> <span class="flag">--html</span> <span class="flag">--watch</span>
-<span class="cmd">/workflow-status</span> <span class="flag">--json</span></code></pre>
+<span class="cmd">/workflow-status</span> <span class="flag">--shell</span>
+<span class="cmd">/workflow-status</span> <span class="flag">--watch</span>
+<span class="cmd">/workflow-status</span> <span class="flag">--no-open</span>
+<span class="cmd">/workflow-status</span> <span class="flag">--no-serve</span>
+<span class="cmd">/workflow-status</span> <span class="flag">--port</span> <span class="value">8766</span></code></pre>
       <h3>Output</h3>
       <ul class="step-list">
-        <li>Terminal mode prints Todo, In Progress, Blocked, Review, and Done columns.</li>
-        <li><code class="inline-code">--html</code> generates <code class="inline-code">.workflow/status/index.html</code>.</li>
-        <li><code class="inline-code">--html --watch</code> rebuilds the local board as workflow files change.</li>
+        <li>Default mode writes <code class="inline-code">.workflow/status/index.html</code>, <code class="inline-code">data.json</code>, <code class="inline-code">app.js</code>, <code class="inline-code">style.css</code>, and UTF-8 markdown viewer files.</li>
+        <li>Default mode serves <code class="inline-code">.workflow/</code> and opens <code class="inline-code">http://127.0.0.1:&lt;port&gt;/status/index.html</code>.</li>
+        <li><code class="inline-code">--shell</code> prints terminal status; <code class="inline-code">--watch</code> rebuilds the dashboard while the server is running.</li>
       </ul>
     </div>
 
@@ -1916,7 +1918,7 @@
         <tr><th>Platform</th><th>Tool</th><th>Description</th></tr>
         <tr><td>GitHub</td><td><code class="inline-code">gh issue create</code></td><td>Requires gh CLI authentication</td></tr>
         <tr><td>Local</td><td>Markdown files</td><td>Saved to local directory</td></tr>
-        <tr><td>Baidu iCafe</td><td><code class="inline-code">icafe-cli</code></td><td>Requires iCafe space parameters</td></tr>
+        
       </table>
     </div>
 
@@ -1934,7 +1936,7 @@
       <p><code class="inline-code">/goal</code> is a built-in feature of Claude Code and doesn't require separate installation. The Issue format generated by this workflow's <code class="inline-code">/prd</code> perfectly matches what <code class="inline-code">/goal</code> expects as input.</p>
 
       <h3>Q: Can I use this in non-GitHub projects?</h3>
-      <p>Yes. <code class="inline-code">/prd</code> supports saving Issues as local Markdown files or creating them in Baidu iCafe. <code class="inline-code">/review-it</code> only needs a local git repository. <code class="inline-code">/ship-it</code> currently depends on GitHub (<code class="inline-code">gh</code> CLI).</p>
+      <p>Yes. <code class="inline-code">/prd</code> supports saving Issues as local Markdown files or creating them in GitHub. <code class="inline-code">/review-it</code> only needs a local git repository. <code class="inline-code">/ship-it</code> currently depends on GitHub (<code class="inline-code">gh</code> CLI).</p>
 
       <h3>Q: How is /review-it different from manual code review?</h3>
       <p><code class="inline-code">/review-it</code> is automated self-review, catching obvious issues before submission. It doesn't replace team code review, but rather improves code quality before PR creation, reducing the low-level issues reviewers need to point out.</p>

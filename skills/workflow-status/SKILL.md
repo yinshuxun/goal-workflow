@@ -1,6 +1,6 @@
 ---
 name: workflow-status
-description: "View or generate a goal-workflow dashboard. Use when inspecting .workflow issues, priorities, dependencies, current work, completion, verification state, SPEC traceability, or when generating an HTML board. Triggers on: workflow-status, workflow board, kanban, 状态看板, 工作流状态."
+description: "View or serve a goal-workflow dashboard. Use when inspecting .workflow issues, priorities, dependencies, current work, completion, verification state, SPEC traceability, or opening the local workflow dashboard. Triggers on: workflow-status, workflow dashboard, kanban, 状态看板, 工作流状态."
 user-invocable: true
 ---
 
@@ -96,7 +96,7 @@ Status rules:
 | `In Progress` | frontmatter `status: in_progress` or current progress points to the issue |
 | `Blocked` | dependencies are missing or incomplete |
 | `Review` | done but review/ship is pending when that signal exists |
-| `Todo` / `Ready next` | dependency-free incomplete issue |
+| `Todo` | dependency-free incomplete issue |
 
 Verification states:
 
@@ -153,13 +153,12 @@ Write generated files:
 Dashboard behavior:
 
 - Render a workflow cockpit optimized for execution decisions, not a decorative AI dashboard.
-- Focus view is the default and orders columns as `Blocked`, `Ready next`, `In Progress`, `Review`; `Done` is hidden in Focus.
-- Kanban view shows workflow flow as `Todo`, `In Progress`, `Review`, `Done`; blocked work remains filterable and visibly marked.
+- Default board uses one execution-focused view ordered as `Blocked`, `Todo`, `In Progress`, `Review`, `Done`.
 - Top bar shows workflow identity and a right-aligned persisted theme selector with Default, Dark, GitHub, Nord, and Solarized styles.
 - Cards open an in-page detail drawer instead of navigating away to raw markdown.
 - Drawer is action-first: Action, Summary, Acceptance Criteria, Dependencies, SPEC Traceability, Verification Evidence, Output, and UTF-8 markdown viewer fallback.
 - Drawer Action shows the recommended executable `/goal` command for the selected issue.
-- Provide filters for search, view mode, priority, type, verification, and hide/show Done.
+- Provide filters for search, priority, type, verification, and a persisted column selector; all five columns are selected by default and users can hide any column.
 - Parse SPEC section headings from `.workflow/specs/*.md`, but do not show the full SPEC section list as the primary navigation.
 - Workflow Navigation groups workflow state into Execution, Traceability, and Health.
 - Traceability groups aggregate related SPEC sections into route-map categories such as Runtime / Shell, Deployment Migration, Validation & Evidence, Platform Evolution, and UI Foundation.
@@ -191,11 +190,6 @@ Dashboard behavior:
   "views": {
     "focus": [
       { "id": "blocked", "title": "Blocked", "cards": [] },
-      { "id": "todo", "title": "Ready next", "cards": [] },
-      { "id": "inProgress", "title": "In Progress", "cards": [] },
-      { "id": "review", "title": "Review", "cards": [] }
-    ],
-    "kanban": [
       { "id": "todo", "title": "Todo", "cards": [] },
       { "id": "inProgress", "title": "In Progress", "cards": [] },
       { "id": "review", "title": "Review", "cards": [] },

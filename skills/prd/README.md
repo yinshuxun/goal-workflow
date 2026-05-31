@@ -9,7 +9,7 @@ Generate structured Product Requirements Documents (PRD) for new features, then 
 - Supports user review and adjustment before saving
 - Saves output to `.workflow/prds/prd-[feature-name].md` by default, with legacy `tasks/` fallback
 - **Decomposes PRD into small, independent, implementable Issues**
-- **Creates Issues in three platforms: GitHub / Local / Baidu iCafe**
+- **Creates Issues in two platforms: GitHub / Local**
 - Bilingual (Chinese & English) edge case handling
 
 ## Issue Creation Modes
@@ -18,7 +18,6 @@ Generate structured Product Requirements Documents (PRD) for new features, then 
 |------|------|-------|
 | **GitHub** | `gh issue create` | Requires `gh` CLI authenticated |
 | **Local** | `.md` files | Asks user for folder path, auto-creates if not exists |
-| **Baidu iCafe** | `icafe-cli card create` | Asks user for `--space` parameter, default `--target-branch` is `master` |
 
 ## Usage
 
