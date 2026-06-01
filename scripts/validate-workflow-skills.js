@@ -297,6 +297,10 @@ function validateWorkflowStatusBehavior() {
   writeIssue(workflowRoot, 11, '## Acceptance Criteria\n\n- [x] Parent done\n\n## SPEC Reference\n\n5.4 Feature Migration Logic\n');
   writeIssue(workflowRoot, '11a', '## Acceptance Criteria\n\n- [x] Suffixed done\n\n## SPEC Reference\n\n5.4 Feature Migration Logic\n');
   writeIssue(workflowRoot, '11b', '## Acceptance Criteria\n\n- [ ] Suffixed todo\n\n## Dependencies\n\n#011a, issue-011a, #011\n\n## SPEC Reference\n\n5.4 Feature Migration Logic\n');
+  fs.writeFileSync(
+    path.join(workflowRoot, 'issues', 'issue-011-bug-fixture.md'),
+    '# Fixture 011 Bug\n\n## Acceptance Criteria\n\n- [x] Bug follow-up\n'
+  );
   fs.writeFileSync(path.join(workflowRoot, 'verification', 'issue-011-fixture.md'), 'Completion decision: passed\n');
   fs.writeFileSync(
     path.join(workflowRoot, 'progress', 'current.md'),
@@ -319,6 +323,10 @@ function validateWorkflowStatusBehavior() {
     }
     const suffixedDone = cards.get('issue-011a');
     const suffixedTodo = cards.get('issue-011b');
+    const keys = [...cards.values()].map((card) => card.key);
+    if (new Set(keys).size !== keys.length) {
+      failures.push('workflow-status: card keys should remain unique when normalized issue IDs collide');
+    }
     if (suffixedDone?.label !== '#011a') {
       failures.push(`workflow-status: suffixed issue should preserve label #011a, got ${suffixedDone?.label}`);
     }

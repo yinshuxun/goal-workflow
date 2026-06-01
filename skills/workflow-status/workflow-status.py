@@ -181,6 +181,7 @@ def parse_issue(path: Path, spec_catalog: dict[str, dict]) -> dict:
     spec_codes = parse_spec_codes(section(text, 'SPEC Reference'))
     return {
         'id': issue_id,
+        'key': path.name,
         'number': number,
         'label': issue_label(issue_id),
         'file': path.name,
@@ -741,7 +742,7 @@ MARKDOWN_HTML = r'''<!doctype html>
 
 APP_JS = r"""
 const allCards = WORKFLOW_DATA.columns.flatMap((column) => column.cards);
-const cardsById = Object.fromEntries(allCards.map((card) => [card.id, card]));
+const cardsByKey = Object.fromEntries(allCards.map((card) => [card.key, card]));
 const validThemes = new Set(['default', 'dark', 'github', 'nord', 'solarized']);
 const allColumnIds = WORKFLOW_DATA.views.focus.map((column) => column.id);
 const storedTheme = localStorage.getItem('workflow-status-theme');
@@ -917,7 +918,7 @@ function render() {
   const columns = activeViewColumns();
   els.board.style.gridTemplateColumns = `repeat(${Math.max(1, columns.length)}, minmax(260px, 1fr))`;
   els.board.innerHTML = columns.length ? columns.map((column) => renderColumn(column.title, cards.filter((card) => card.status === column.id))).join('') : '<div class="empty-board">No columns selected</div>';
-  els.board.querySelectorAll('[data-card-id]').forEach((button) => button.addEventListener('click', () => openDrawer(button.dataset.cardId)));
+  els.board.querySelectorAll('[data-card-key]').forEach((button) => button.addEventListener('click', () => openDrawer(button.dataset.cardKey)));
 }
 
 function renderColumn(title, cards) {
@@ -929,7 +930,7 @@ function renderCard(card) {
   const pct = Math.round(card.completionRatio * 100);
   const specs = groupLabelsForCard(card).join(', ') || card.specReferences.map((item) => item.code).join(', ') || 'No SPEC group';
   const blocked = card.blockedReasons.length ? `<div class="blocked-line">Blocked by: ${escapeHtml(card.blockedReasons.map((item) => `${item.label} ${item.missing ? '(missing)' : item.title}`).join(', '))}</div>` : '';
-  return `<button class="card ${card.status === 'blocked' ? 'is-blocked' : ''}" data-card-id="${escapeHtml(card.id)}">
+  return `<button class="card ${card.status === 'blocked' ? 'is-blocked' : ''}" data-card-key="${escapeHtml(card.key)}">
     <div class="card-meta"><span class="priority ${escapeHtml(card.priority)}">${escapeHtml(card.priority)}</span><span>${escapeHtml(card.type)}</span><span class="verification ${escapeHtml(card.verification)}">${escapeHtml(card.verification)}</span></div>
     <div class="card-title">${escapeHtml(card.label)} ${escapeHtml(card.title)}</div>
     <div class="card-spec">${escapeHtml(specs)}</div>
@@ -945,8 +946,8 @@ function groupLabelsForCard(card) {
     .map((group) => group.title);
 }
 
-function openDrawer(cardId) {
-  const card = cardsById[cardId];
+function openDrawer(cardKey) {
+  const card = cardsByKey[cardKey];
   if (!card) return;
   els.drawerLabel.textContent = `${card.label} · ${card.priority} · ${card.type}`;
   els.drawerTitle.textContent = card.title;
