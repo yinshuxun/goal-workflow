@@ -498,7 +498,7 @@
         <h1>Goal Workflow 使用指南</h1>
       </div>
       <p class="subtitle">AI-driven development workflow — from PRD to shipped code</p>
-      <p class="subtitle" style="margin-top: 0.25rem;"><a href="https://github.com/smallnest/goal-workflow" style="color: #D97757; text-decoration: none;"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style="vertical-align: middle; margin-right: 3px;"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>github.com/smallnest/goal-workflow</a></p>
+      <p class="subtitle" style="margin-top: 0.25rem;"><a href="https://github.com/yinshuxun/goal-workflow" style="color: #D97757; text-decoration: none;"><svg width="14" height="14" viewBox="0 0 16 16" fill="currentColor" style="vertical-align: middle; margin-right: 3px;"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg>github.com/yinshuxun/goal-workflow</a></p>
       <p class="diagram-desc"><b>Usage Guide</b> — 六步闭环研发工作流：规划、设计、拆解、实现、审查、交付。</p>
     </div>
 
@@ -529,7 +529,8 @@
         <li><a href="#step-code-to-spec">20. Bonus: /code-to-spec — 逆向生成规格文档</a></li>
         <li><a href="#step-smell">21. Bonus: /smell — 架构坏味道检测</a></li>
         <li><a href="#platforms">22. 支持的平台</a></li>
-        <li><a href="#faq">23. FAQ</a></li>
+        <li><a href="#github-pages">23. GitHub Pages</a></li>
+        <li><a href="#faq">24. FAQ</a></li>
       </ul>
     </div>
 
@@ -606,7 +607,7 @@
           <ul>
             <li>自动在浏览器打开 dashboard</li>
             <li>展示优先级、依赖和 verification</li>
-            <li>支持 --shell、--watch 和 --no-open</li>
+            <li>默认 watch 模式；支持 --shell、--no-watch 和 --no-open</li>
           </ul>
         </div>
         <div class="card">
@@ -788,33 +789,33 @@
       </div>
       <p>通过 <code class="inline-code">npx skills</code> CLI 一键安装所有技能：</p>
       <pre><code><span class="comment"># 安装本仓库所有 skills</span>
-<span class="cmd">npx skills add smallnest/goal-workflow</span>
+<span class="cmd">npx skills add yinshuxun/goal-workflow</span>
 
 <span class="comment"># 或安装指定 skill</span>
-<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">workflow-init</span>
-<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">prd</span>
-<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">prd-to-spec</span>
-<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">to-issues</span>
-<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">workflow-status</span>
-<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">verify-it</span>
-<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">progress-it</span>
-<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">resume-it</span>
-<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">review-it</span>
-<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">ship-it</span>
-<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">humanize-it</span>
-<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">listenhub-tts</span>
-<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">insight-diagram</span>
-<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">refactor</span>
-<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">modern-go</span>
-<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">note-it</span>
-<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">code-to-spec</span>
-<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">--skill</span> <span class="value">smell</span>
+<span class="cmd">npx skills add yinshuxun/goal-workflow</span> <span class="flag">--skill</span> <span class="value">workflow-init</span>
+<span class="cmd">npx skills add yinshuxun/goal-workflow</span> <span class="flag">--skill</span> <span class="value">prd</span>
+<span class="cmd">npx skills add yinshuxun/goal-workflow</span> <span class="flag">--skill</span> <span class="value">prd-to-spec</span>
+<span class="cmd">npx skills add yinshuxun/goal-workflow</span> <span class="flag">--skill</span> <span class="value">to-issues</span>
+<span class="cmd">npx skills add yinshuxun/goal-workflow</span> <span class="flag">--skill</span> <span class="value">workflow-status</span>
+<span class="cmd">npx skills add yinshuxun/goal-workflow</span> <span class="flag">--skill</span> <span class="value">verify-it</span>
+<span class="cmd">npx skills add yinshuxun/goal-workflow</span> <span class="flag">--skill</span> <span class="value">progress-it</span>
+<span class="cmd">npx skills add yinshuxun/goal-workflow</span> <span class="flag">--skill</span> <span class="value">resume-it</span>
+<span class="cmd">npx skills add yinshuxun/goal-workflow</span> <span class="flag">--skill</span> <span class="value">review-it</span>
+<span class="cmd">npx skills add yinshuxun/goal-workflow</span> <span class="flag">--skill</span> <span class="value">ship-it</span>
+<span class="cmd">npx skills add yinshuxun/goal-workflow</span> <span class="flag">--skill</span> <span class="value">humanize-it</span>
+<span class="cmd">npx skills add yinshuxun/goal-workflow</span> <span class="flag">--skill</span> <span class="value">listenhub-tts</span>
+<span class="cmd">npx skills add yinshuxun/goal-workflow</span> <span class="flag">--skill</span> <span class="value">insight-diagram</span>
+<span class="cmd">npx skills add yinshuxun/goal-workflow</span> <span class="flag">--skill</span> <span class="value">refactor</span>
+<span class="cmd">npx skills add yinshuxun/goal-workflow</span> <span class="flag">--skill</span> <span class="value">modern-go</span>
+<span class="cmd">npx skills add yinshuxun/goal-workflow</span> <span class="flag">--skill</span> <span class="value">note-it</span>
+<span class="cmd">npx skills add yinshuxun/goal-workflow</span> <span class="flag">--skill</span> <span class="value">code-to-spec</span>
+<span class="cmd">npx skills add yinshuxun/goal-workflow</span> <span class="flag">--skill</span> <span class="value">smell</span>
 
 <span class="comment"># 全局安装（所有项目可用）</span>
-<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">-g</span>
+<span class="cmd">npx skills add yinshuxun/goal-workflow</span> <span class="flag">-g</span>
 
 <span class="comment"># 安装到指定 agent</span>
-<span class="cmd">npx skills add smallnest/goal-workflow</span> <span class="flag">-a</span> <span class="value">claude-code</span></code></pre>
+<span class="cmd">npx skills add yinshuxun/goal-workflow</span> <span class="flag">-a</span> <span class="value">claude-code</span></code></pre>
 
       <h3>前置要求</h3>
       <table>
@@ -1233,12 +1234,12 @@
         <h3>8. Step 1.7: /workflow-status — Dashboard</h3>
       </div>
       <p>
-        <code class="inline-code">/workflow-status</code> 从 <code class="inline-code">.workflow/</code> 聚合 Issue、优先级、依赖、完成状态、SPEC traceability 和 verification 状态，默认生成交互式 dashboard、启动本地服务，并在默认浏览器打开。
+        <code class="inline-code">/workflow-status</code> 从 <code class="inline-code">.workflow/</code> 聚合 Issue、优先级、依赖、完成状态、SPEC traceability 和 verification 状态，默认生成交互式 dashboard、启动本地服务、在默认浏览器打开，并监听 <code class="inline-code">.workflow/</code> 自动重建。
       </p>
       <h3>使用方式</h3>
       <pre><code><span class="cmd">/workflow-status</span>
 <span class="cmd">/workflow-status</span> <span class="flag">--shell</span>
-<span class="cmd">/workflow-status</span> <span class="flag">--watch</span>
+<span class="cmd">/workflow-status</span> <span class="flag">--no-watch</span>
 <span class="cmd">/workflow-status</span> <span class="flag">--no-open</span>
 <span class="cmd">/workflow-status</span> <span class="flag">--no-serve</span>
 <span class="cmd">/workflow-status</span> <span class="flag">--port</span> <span class="value">8766</span></code></pre>
@@ -1246,7 +1247,7 @@
       <ul class="step-list">
         <li>默认生成 <code class="inline-code">.workflow/status/index.html</code>、<code class="inline-code">data.json</code>、<code class="inline-code">app.js</code>、<code class="inline-code">style.css</code> 和 UTF-8 markdown viewer 文件。</li>
         <li>默认服务 <code class="inline-code">.workflow/</code>，打开 <code class="inline-code">http://127.0.0.1:&lt;port&gt;/status/index.html</code>。</li>
-        <li><code class="inline-code">--shell</code> 输出终端状态；<code class="inline-code">--watch</code> 在服务运行时持续重建 dashboard。</li>
+        <li><code class="inline-code">--shell</code> 输出终端状态；<code class="inline-code">--no-watch</code> 在服务运行时只保留静态快照，不持续重建 dashboard。</li>
         <li>卡片展示 issue 编号、标题、priority、type、依赖、验收进度、SPEC traceability 和 verification 状态。</li>
       </ul>
     </div>
@@ -1922,11 +1923,26 @@
       </table>
     </div>
 
-    <!-- Section 19: FAQ -->
+    <!-- Section 19: GitHub Pages -->
+    <div class="section" id="github-pages">
+      <div class="section-title">
+        <div class="section-dot teal"></div>
+        <h3>19. GitHub Pages</h3>
+      </div>
+      <p><code class="inline-code">docs/</code> 目录是一套自包含的静态文档站点，适合直接作为 GitHub Pages 发布源。</p>
+      <ul class="step-list">
+        <li>在 GitHub Pages 设置中选择发布分支上的 <code class="inline-code">docs/</code> 目录作为 source。</li>
+        <li><code class="inline-code">docs/index.html</code> 是入口页，会根据浏览器语言跳转到 <code class="inline-code">index_cn.html</code> 或 <code class="inline-code">index_en.html</code>。</li>
+        <li><code class="inline-code">docs/workflow.png</code> 是 README 和 Pages 共用的信息图。只有顶层生命周期变化时才需要重新生成；命令级细节变化维护在 HTML 指南里即可。</li>
+        <li><code class="inline-code">/workflow-status</code> 生成的运行时 dashboard 属于各项目自己的 <code class="inline-code">.workflow/status/</code>，不是本仓库公开 Pages 站点的一部分。</li>
+      </ul>
+    </div>
+
+    <!-- Section 20: FAQ -->
     <div class="section" id="faq">
       <div class="section-title">
         <div class="section-dot terracotta"></div>
-        <h3>19. FAQ</h3>
+        <h3>20. FAQ</h3>
       </div>
 
       <h3>Q: 必须按顺序使用所有步骤吗？</h3>
@@ -1982,7 +1998,7 @@
 
     <!-- Footer -->
     <p class="footer">
-      <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style="vertical-align: middle; margin-right: 2px;"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg> goal-workflow · AI-driven development workflow · github.com/smallnest/goal-workflow
+      <svg width="12" height="12" viewBox="0 0 16 16" fill="currentColor" style="vertical-align: middle; margin-right: 2px;"><path fill-rule="evenodd" d="M8 0C3.58 0 0 3.58 0 8c0 3.54 2.29 6.53 5.47 7.59.4.07.55-.17.55-.38 0-.19-.01-.82-.01-1.49-2.01.37-2.53-.49-2.69-.94-.09-.23-.48-.94-.82-1.13-.28-.15-.68-.52-.01-.53.63-.01 1.08.58 1.23.82.72 1.21 1.87.87 2.33.66.07-.52.28-.87.51-1.07-1.78-.2-3.64-.89-3.64-3.95 0-.87.31-1.59.82-2.15-.08-.2-.36-1.02.08-2.12 0 0 .67-.21 2.2.82.64-.18 1.32-.27 2-.27s1.36.09 2 .27c1.53-1.04 2.2-.82 2.2-.82.44 1.1.16 1.92.08 2.12.51.56.82 1.27.82 2.15 0 3.07-1.87 3.75-3.65 3.95.29.25.54.73.54 1.48 0 1.07-.01 1.93-.01 2.2 0 .21.15.46.55.38A8.013 8.013 0 0016 8c0-4.42-3.58-8-8-8z"/></svg> goal-workflow · AI-driven development workflow · github.com/yinshuxun/goal-workflow
     </p>
   </div>
 

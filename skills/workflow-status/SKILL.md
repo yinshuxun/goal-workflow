@@ -6,7 +6,7 @@ user-invocable: true
 
 # workflow-status — Workflow Status Dashboard
 
-Aggregate `.workflow/` artifacts into an interactive HTML dashboard by default. Use `--shell` when a compact terminal board is needed.
+Aggregate `.workflow/` artifacts into an interactive HTML dashboard with watch mode enabled by default. Use `--shell` when a compact terminal board is needed.
 
 Use `workflow-status.py` in this skill directory for terminal, HTML, and watch mode generation instead of reimplementing parsing logic inline.
 
@@ -18,7 +18,7 @@ Use `workflow-status.py` in this skill directory for terminal, HTML, and watch m
 2. **Build Board Data** — parse issues, dependencies, progress, specs, notes, and verification records.
 3. **HTML Dashboard** — default output writes `.workflow/status/index.html`, `.workflow/status/data.json`, `.workflow/status/markdown.html`, `.workflow/status/markdown-data.json`, `.workflow/status/style.css`, and `.workflow/status/app.js`, serves `.workflow/` locally, and opens `/status/index.html` in the default browser.
 4. **Terminal Output** — with `--shell`, print a compact issue board and next action.
-5. **Watch Mode** — with `--watch`, serve the dashboard and rebuild it when workflow files change.
+5. **Watch Mode** — enabled by default for HTML mode; use `--no-watch` to serve without rebuilding when workflow files change.
 
 ---
 
@@ -44,7 +44,7 @@ No .workflow workspace found. Run /workflow-init first.
 When running inside Claude Code, prefer:
 
 ```bash
-python3 <skill-dir>/workflow-status.py [--dir <path>] [--watch]
+python3 <skill-dir>/workflow-status.py [--dir <path>]
 ```
 
 Use shell mode only when the user explicitly wants terminal output:
@@ -129,12 +129,14 @@ Default behavior:
 - Generate dashboard files.
 - Serve the workflow root locally, defaulting to `127.0.0.1:8766` and trying the next available port when occupied.
 - Open `http://127.0.0.1:<port>/status/index.html` in the default browser.
+- Watch `.workflow/` and rebuild the dashboard when workflow files change.
 - Keep the local server running until interrupted.
 
 Useful options:
 
 ```bash
 python3 <skill-dir>/workflow-status.py --no-open
+python3 <skill-dir>/workflow-status.py --no-watch
 python3 <skill-dir>/workflow-status.py --no-serve
 python3 <skill-dir>/workflow-status.py --port 8766
 ```
@@ -242,8 +244,10 @@ Always include a recommended next command when a pending issue exists.
 Command:
 
 ```text
-/workflow-status --watch
+/workflow-status
 ```
+
+`--watch` is still accepted for explicitness. Use `--no-watch` to serve without file watching.
 
 Behavior:
 

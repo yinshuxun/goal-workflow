@@ -15,7 +15,7 @@ An AI-driven development workflow — from PRD to shipped code, all within Claud
 ## Installation
 
 ```bash
-npx skills add smallnest/goal-workflow
+npx skills add yinshuxun/goal-workflow
 ```
 
 ## Skills
@@ -26,7 +26,7 @@ npx skills add smallnest/goal-workflow
 | `/prd` | Generate PRD (requirements document) |
 | `/prd-to-spec` | Transform PRD into technical SPEC (optional) |
 | `/to-issues` | Decompose PRD/SPEC into Issues and create tickets |
-| `/workflow-status` | Serve the interactive workflow dashboard locally and open it in the default browser; use `--shell` for terminal output |
+| `/workflow-status` | Serve the interactive workflow dashboard locally, open it in the default browser, and watch `.workflow/` for rebuilds by default; use `--shell` for terminal output |
 | `/goal` | Implement an Issue end-to-end (Claude Code built-in) |
 | `/verify-it` | Capture fresh verification evidence for an Issue |
 | `/progress-it` | Update durable progress, history, and workflow index records |
@@ -45,6 +45,10 @@ npx skills add smallnest/goal-workflow
 ## Documentation
 
 Full usage guide: [docs/index.html](docs/index.html)
+
+The `docs/` directory is a static documentation site suitable for GitHub Pages. Use `docs/` as the Pages source and `docs/index.html` as the entry point; it redirects readers to the Chinese or English guide.
+
+`docs/workflow.png` is the shared README and Pages infographic. It does not need to be regenerated unless the top-level lifecycle changes; command details belong in the HTML guides.
 
 ## License
 
