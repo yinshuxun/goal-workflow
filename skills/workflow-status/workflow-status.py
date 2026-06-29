@@ -169,7 +169,7 @@ def markdown_href(workflow_path: str) -> str:
     return f"markdown.html?file={quote(workflow_path, safe='')}"
 
 
-def parse_issue(path: Path, spec_catalog: dict[str, dict]) -> dict:
+def parse_issue(path: Path, spec_catalog: dict[str, dict], spec_to_prd: dict[str, str], spec_code_to_prd: dict[str, str]) -> dict:
     text = path.read_text()
     title = next((line[2:].strip() for line in text.splitlines() if line.startswith('# ')), path.stem)
     acceptance = section(text, 'Acceptance Criteria')
@@ -178,7 +178,12 @@ def parse_issue(path: Path, spec_catalog: dict[str, dict]) -> dict:
     total = len(check_items)
     number = issue_number(path)
     issue_id = normalize_issue_id(number)
-    spec_codes = parse_spec_codes(section(text, 'SPEC Reference'))
+    spec_reference_text = section(text, 'SPEC Reference')
+    spec_codes = parse_spec_codes(spec_reference_text)
+    spec_files = parse_spec_files(spec_reference_text)
+    prd_id = next((spec_to_prd[file] for file in spec_files if file in spec_to_prd), None)
+    if prd_id is None:
+        prd_id = next((spec_code_to_prd[code] for code in spec_codes if code in spec_code_to_prd), 'unassigned')
     return {
         'id': issue_id,
         'key': path.name,
@@ -193,8 +198,10 @@ def parse_issue(path: Path, spec_catalog: dict[str, dict]) -> dict:
         'priority': first_section_line(text, 'Priority'),
         'type': first_section_line(text, 'Type'),
         'dependencies': parse_dependencies(section(text, 'Dependencies')),
-        'specReference': section(text, 'SPEC Reference'),
-        'specReferences': [spec_reference(code, spec_catalog) for code in spec_codes],
+        'specReference': spec_reference_text,
+        'specReferences': spec_references(spec_codes, spec_files, spec_catalog),
+        'specFiles': spec_files,
+        'prdId': prd_id,
         'acceptanceItems': check_items,
         'output': section(text, 'Output'),
         'checklist': {'done': done, 'total': total},
@@ -207,8 +214,80 @@ def parse_spec_codes(raw: str) -> list[str]:
     return dedupe(codes)
 
 
-def spec_reference(code: str, catalog: dict[str, dict]) -> dict:
-    value = catalog.get(code, {})
+def parse_spec_files(raw: str) -> list[str]:
+    matches = re.findall(r'\.workflow/specs/([^`\s)]+\.md)|\bspecs/([^`\s)]+\.md)', raw)
+    return dedupe([first or second for first, second in matches])
+
+
+def h1_title(text: str, default: str) -> str:
+    return next((line[2:].strip() for line in text.splitlines() if line.startswith('# ')), default)
+
+
+def prd_id_from_file(file_name: str) -> str:
+    return Path(file_name).stem
+
+
+def prd_catalog(root: Path) -> dict[str, dict]:
+    prds_dir = root / 'prds'
+    catalog: dict[str, dict] = {}
+    if not prds_dir.is_dir():
+        return catalog
+    for path in sorted(prds_dir.glob('*.md')):
+        text = path.read_text()
+        prd_id = prd_id_from_file(path.name)
+        catalog[prd_id] = {
+            'id': prd_id,
+            'title': h1_title(text, path.stem),
+            'file': path.name,
+            'path': f'.workflow/prds/{path.name}',
+            'rawHref': markdown_href(f'prds/{path.name}'),
+        }
+    return catalog
+
+
+def spec_prd_index(root: Path, prds: dict[str, dict]) -> dict[str, str]:
+    specs_dir = root / 'specs'
+    index: dict[str, str] = {}
+    if not specs_dir.is_dir():
+        return index
+    for path in sorted(specs_dir.glob('*.md')):
+        text = path.read_text()
+        match = re.search(r'\.workflow/prds/([^`\s)]+\.md)|\bprds/([^`\s)]+\.md)', text)
+        if match:
+            prd_id = prd_id_from_file(match.group(1) or match.group(2))
+        else:
+            prd_id = prd_id_from_file(path.name.replace('spec-', 'prd-', 1))
+        if prd_id in prds:
+            index[path.name] = prd_id
+    return index
+
+
+def spec_code_prd_index(specs: dict[str, dict], spec_to_prd: dict[str, str]) -> dict[str, str]:
+    owners: dict[str, set[str]] = {}
+    for code, spec in specs.items():
+        if code.startswith('_'):
+            continue
+        for file_name in spec.get('files', [spec.get('file', '')]):
+            prd_id = spec_to_prd.get(file_name)
+            if prd_id:
+                owners.setdefault(code, set()).add(prd_id)
+    return {code: next(iter(prd_ids)) for code, prd_ids in owners.items() if len(prd_ids) == 1}
+
+
+def spec_references(codes: list[str], spec_files: list[str], catalog: dict[str, dict]) -> list[dict]:
+    return [spec_reference(code, catalog, spec_files) for code in codes]
+
+
+def spec_reference(code: str, catalog: dict[str, dict], spec_files: list[str] | None = None) -> dict:
+    by_file = catalog.get('_by_file', {})
+    for file_name in spec_files or []:
+        value = by_file.get(file_name, {}).get(code)
+        if value:
+            return format_spec_reference(code, value)
+    return format_spec_reference(code, catalog.get(code, {}))
+
+
+def format_spec_reference(code: str, value: dict) -> dict:
     return {
         'code': code,
         'title': value.get('title', ''),
@@ -223,7 +302,8 @@ def spec_catalog(root: Path) -> dict[str, dict]:
     specs_dir = root / 'specs'
     if not specs_dir.is_dir():
         return {}
-    catalog: dict[str, dict] = {}
+    catalog: dict[str, dict] = {'_by_file': {}}
+    by_file = catalog['_by_file']
     for path in sorted(specs_dir.glob('*.md')):
         text = path.read_text()
         headings = list(re.finditer(r'^(#{2,6})\s+(\d+(?:\.\d+)+)\s+(.+)$', text, re.M))
@@ -233,16 +313,16 @@ def spec_catalog(root: Path) -> dict[str, dict]:
             start = match.end()
             end = headings[index + 1].start() if index + 1 < len(headings) else len(text)
             excerpt = plain_excerpt(text[start:end])
-            catalog.setdefault(
-                code,
-                {
-                    'code': code,
-                    'title': title,
-                    'excerpt': excerpt,
-                    'file': path.name,
-                    'path': f'.workflow/specs/{path.name}',
-                },
-            )
+            item = {
+                'code': code,
+                'title': title,
+                'excerpt': excerpt,
+                'file': path.name,
+                'path': f'.workflow/specs/{path.name}',
+            }
+            by_file.setdefault(path.name, {})[code] = item
+            catalog.setdefault(code, {**item, 'files': []})
+            catalog[code]['files'].append(path.name)
     return catalog
 
 
@@ -323,16 +403,17 @@ def active_issue_ids_from_text(text: str) -> set[str]:
 def build_data(root: Path) -> dict:
     issues_dir = root / 'issues'
     specs = spec_catalog(root)
-    issues = [parse_issue(path, specs) for path in sorted(issues_dir.glob('*.md'))] if issues_dir.is_dir() else []
+    prds = prd_catalog(root)
+    spec_to_prd = spec_prd_index(root, prds)
+    spec_code_to_prd = spec_code_prd_index(specs, spec_to_prd)
+    issues = [parse_issue(path, specs, spec_to_prd, spec_code_to_prd) for path in sorted(issues_dir.glob('*.md'))] if issues_dir.is_dir() else []
     by_id = {issue['id']: issue for issue in issues}
+    infer_prd_from_dependencies(issues, by_id)
     progress_text = read_current_progress(root)
     current_status = progress_status(progress_text)
     progress_ids = progress_issue_ids(progress_text)
     active_ids = active_issue_ids_from_text(progress_text)
     verification_by_issue = verification_index(root / 'verification')
-
-    columns = [{'id': key, 'title': title, 'cards': []} for key, title in COLUMN_ORDER]
-    by_column = {column['id']: column for column in columns}
 
     for issue in issues:
         blockers = []
@@ -359,10 +440,52 @@ def build_data(root: Path) -> dict:
         else:
             status = 'todo'
         issue['status'] = status
-        by_column[status]['cards'].append(issue)
 
-    summary = {
-        'total': len(issues),
+    columns, by_column = columns_for_issues(issues)
+    spec_sections = sorted((item for key, item in specs.items() if not key.startswith('_')), key=lambda item: [int(part) for part in item['code'].split('.')])
+    prd_views = prd_view_data(prds, issues, spec_to_prd)
+    selected_prd = next((prd['id'] for prd in prd_views if prd['summary']['total'] > 0), prd_views[0]['id'] if prd_views else 'all')
+    return {
+        'workflow': workflow_name(root),
+        'updatedAt': datetime.now(TZ).isoformat(timespec='seconds'),
+        'summary': summary_from_columns(columns, by_column),
+        'health': health_summary(issues),
+        'recommendedNext': next_issue_from_columns(by_column),
+        'columns': columns,
+        'views': {
+            'focus': view_columns(by_column, FOCUS_COLUMNS),
+        },
+        'prds': prd_views,
+        'selectedPrdId': selected_prd,
+        'traceabilityGroups': traceability_groups(issues),
+        'specSections': spec_sections,
+    }
+
+
+def infer_prd_from_dependencies(issues: list[dict], by_id: dict[str, dict]) -> None:
+    changed = True
+    while changed:
+        changed = False
+        for issue in issues:
+            if issue.get('prdId') != 'unassigned':
+                continue
+            prd_ids = {by_id[dep]['prdId'] for dep in issue['dependencies'] if dep in by_id and by_id[dep].get('prdId') != 'unassigned'}
+            if len(prd_ids) == 1:
+                issue['prdId'] = next(iter(prd_ids))
+                changed = True
+
+
+def columns_for_issues(issues: list[dict]) -> tuple[list[dict], dict[str, dict]]:
+    columns = [{'id': key, 'title': title, 'cards': []} for key, title in COLUMN_ORDER]
+    by_column = {column['id']: column for column in columns}
+    for issue in issues:
+        by_column[issue['status']]['cards'].append(issue)
+    return columns, by_column
+
+
+def summary_from_columns(columns: list[dict], by_column: dict[str, dict]) -> dict:
+    return {
+        'total': sum(len(column['cards']) for column in columns),
         'todo': len(by_column['todo']['cards']),
         'inProgress': len(by_column['inProgress']['cards']),
         'blocked': len(by_column['blocked']['cards']),
@@ -373,19 +496,29 @@ def build_data(root: Path) -> dict:
             1 for column in columns for card in column['cards'] if card['verification'] == 'missing'
         ),
     }
-    spec_sections = sorted(specs.values(), key=lambda item: [int(part) for part in item['code'].split('.')])
+
+
+def prd_view_data(prds: dict[str, dict], issues: list[dict], spec_to_prd: dict[str, str]) -> list[dict]:
+    result = []
+    specs_by_prd: dict[str, list[str]] = {}
+    for spec_file, prd_id in spec_to_prd.items():
+        specs_by_prd.setdefault(prd_id, []).append(spec_file)
+    for prd in prds.values():
+        result.append(prd_view(prd, [issue for issue in issues if issue.get('prdId') == prd['id']], sorted(specs_by_prd.get(prd['id'], []))))
+    unassigned = [issue for issue in issues if issue.get('prdId') == 'unassigned']
+    if unassigned:
+        result.append(prd_view({'id': 'unassigned', 'title': 'Unassigned', 'file': '', 'path': '', 'rawHref': ''}, unassigned, []))
+    return result
+
+
+def prd_view(prd: dict, issues: list[dict], spec_files: list[str]) -> dict:
+    columns, by_column = columns_for_issues(issues)
     return {
-        'workflow': workflow_name(root),
-        'updatedAt': datetime.now(TZ).isoformat(timespec='seconds'),
-        'summary': summary,
-        'health': health_summary(issues),
+        **prd,
+        'summary': summary_from_columns(columns, by_column),
         'recommendedNext': next_issue_from_columns(by_column),
-        'columns': columns,
-        'views': {
-            'focus': view_columns(by_column, FOCUS_COLUMNS),
-        },
-        'traceabilityGroups': traceability_groups(issues),
-        'specSections': spec_sections,
+        'views': {'focus': view_columns(by_column, FOCUS_COLUMNS)},
+        'specFiles': dedupe([*spec_files, *[file for issue in issues for file in issue.get('specFiles', [])]]),
     }
 
 
@@ -463,7 +596,7 @@ def workflow_name(root: Path) -> str:
 
 def markdown_data(root: Path) -> dict[str, str]:
     documents: dict[str, str] = {}
-    for folder in ['issues', 'specs', 'verification']:
+    for folder in ['prds', 'issues', 'specs', 'verification']:
         source = root / folder
         if not source.is_dir():
             continue
@@ -504,36 +637,15 @@ def render_html(data: dict) -> str:
     </div>
     <div class="dropdown-filter theme-control"><span>Theme</span><button id="themeButton" type="button" aria-haspopup="true" aria-expanded="false"></button><div id="themeMenu" class="filter-menu" hidden></div></div>
   </header>
-  <section class="summary">
-    {metric('Total', summary['total'])}
-    {metric('Blocked', summary['blocked'])}
-    {metric('Todo', summary['ready'])}
-    {metric('In Progress', summary['inProgress'])}
-    {metric('Review', summary['review'])}
-    {metric('Done', summary['done'])}
-  </section>
-  <section class="toolbar" aria-label="Workflow filters">
-    <label>Search<input id="searchInput" type="search" placeholder="Issue, title, description" /></label>
-    <div class="dropdown-filter"><span>Priority</span><button id="priorityButton" type="button" aria-haspopup="true" aria-expanded="false"></button><div id="priorityMenu" class="filter-menu" hidden></div></div>
-    <div class="dropdown-filter"><span>Type</span><button id="typeButton" type="button" aria-haspopup="true" aria-expanded="false"></button><div id="typeMenu" class="filter-menu" hidden></div></div>
-    <div class="dropdown-filter"><span>Verification</span><button id="verificationButton" type="button" aria-haspopup="true" aria-expanded="false"></button><div id="verificationMenu" class="filter-menu" hidden></div></div>
-    <div class="dropdown-filter"><span>Columns</span><button id="columnFilterButton" type="button" aria-haspopup="true" aria-expanded="false"></button><div id="columnFilter" class="filter-menu" hidden></div></div>
+  <section id="summary" class="summary"></section>
+  <section class="prd-switcher" aria-label="PRD switcher">
+    <div>
+      <p class="eyebrow">prd scope</p>
+      <h2>选择一个 PRD 查看归属的 specs 和 issues</h2>
+    </div>
+    <div id="prdSwitcher" class="prd-list"></div>
   </section>
   <main class="layout">
-    <aside class="navigator" aria-label="Workflow navigation">
-      <section>
-        <h2>Execution</h2>
-        <div id="executionNav" class="nav-list"></div>
-      </section>
-      <section>
-        <h2>Traceability</h2>
-        <div id="traceabilityNav" class="nav-list"></div>
-      </section>
-      <section>
-        <h2>Health</h2>
-        <div id="healthNav" class="nav-list"></div>
-      </section>
-    </aside>
     <section id="board" class="board" aria-label="Workflow board"></section>
   </main>
   <aside id="drawer" class="drawer" aria-hidden="true">
@@ -644,7 +756,7 @@ def serve_dashboard(root: Path, port: int, open_browser: bool, watch: bool) -> N
 
 
 def run_watch(root: Path, server: ReusableTCPServer) -> None:
-    watch_paths = [root / 'issues', root / 'progress', root / 'verification', root / 'notes', root / 'config.json', root / 'specs']
+    watch_paths = [root / 'prds', root / 'issues', root / 'progress', root / 'verification', root / 'notes', root / 'config.json', root / 'specs']
     print('Watching .workflow/...')
     print(f"[{datetime.now(TZ).strftime('%H:%M:%S')}] rebuilt .workflow/status/index.html")
     last = snapshot(watch_paths)
@@ -743,29 +855,19 @@ MARKDOWN_HTML = r'''<!doctype html>
 APP_JS = r"""
 const allCards = WORKFLOW_DATA.columns.flatMap((column) => column.cards);
 const cardsByKey = Object.fromEntries(allCards.map((card) => [card.key, card]));
+const prds = WORKFLOW_DATA.prds?.length ? WORKFLOW_DATA.prds : [{ id: 'all', title: 'All workflow', summary: WORKFLOW_DATA.summary, views: WORKFLOW_DATA.views, specFiles: [] }];
+const validPrdIds = new Set(prds.map((prd) => prd.id));
 const validThemes = new Set(['default', 'dark', 'github', 'nord', 'solarized']);
-const allColumnIds = WORKFLOW_DATA.views.focus.map((column) => column.id);
 const storedTheme = localStorage.getItem('workflow-status-theme');
-const storedColumns = JSON.parse(localStorage.getItem('workflow-status-columns') || 'null');
-const visibleColumns = Array.isArray(storedColumns) ? storedColumns.filter((id) => allColumnIds.includes(id)) : allColumnIds;
-const state = { query: '', theme: validThemes.has(storedTheme) ? storedTheme : 'default', priority: 'all', type: 'all', verification: 'all', nav: 'all', columns: visibleColumns.length ? visibleColumns : allColumnIds };
+const storedPrd = localStorage.getItem('workflow-status-prd');
+const state = { prd: validPrdIds.has(storedPrd) ? storedPrd : WORKFLOW_DATA.selectedPrdId, theme: validThemes.has(storedTheme) ? storedTheme : 'default' };
 
 const els = {
+  summary: document.querySelector('#summary'),
+  prdSwitcher: document.querySelector('#prdSwitcher'),
   board: document.querySelector('#board'),
-  search: document.querySelector('#searchInput'),
   theme: document.querySelector('#themeMenu'),
   themeButton: document.querySelector('#themeButton'),
-  priority: document.querySelector('#priorityMenu'),
-  priorityButton: document.querySelector('#priorityButton'),
-  type: document.querySelector('#typeMenu'),
-  typeButton: document.querySelector('#typeButton'),
-  verification: document.querySelector('#verificationMenu'),
-  verificationButton: document.querySelector('#verificationButton'),
-  columnFilter: document.querySelector('#columnFilter'),
-  columnFilterButton: document.querySelector('#columnFilterButton'),
-  executionNav: document.querySelector('#executionNav'),
-  traceabilityNav: document.querySelector('#traceabilityNav'),
-  healthNav: document.querySelector('#healthNav'),
   drawer: document.querySelector('#drawer'),
   drawerBackdrop: document.querySelector('#drawerBackdrop'),
   drawerLabel: document.querySelector('#drawerLabel'),
@@ -773,51 +875,65 @@ const els = {
   drawerContent: document.querySelector('#drawerContent'),
 };
 
-function uniq(values) {
-  return [...new Set(values.filter(Boolean))].sort((a, b) => String(a).localeCompare(String(b), 'zh-CN'));
-}
-
 function escapeHtml(value) {
   return String(value ?? '').replace(/[&<>"']/g, (char) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[char]));
+}
+
+function activePrd() {
+  return prds.find((prd) => prd.id === state.prd) || prds[0];
+}
+
+function scopedCards() {
+  const prd = activePrd();
+  return prd.id === 'all' ? allCards : allCards.filter((card) => card.prdId === prd.id);
+}
+
+function metricHtml(label, value) {
+  return `<div class="metric"><strong>${value}</strong><span>${escapeHtml(label)}</span></div>`;
+}
+
+function renderSummary() {
+  const summary = activePrd().summary || WORKFLOW_DATA.summary;
+  els.summary.innerHTML = [
+    metricHtml('Total', summary.total),
+    metricHtml('Blocked', summary.blocked),
+    metricHtml('Todo', summary.ready),
+    metricHtml('In Progress', summary.inProgress),
+    metricHtml('Review', summary.review),
+    metricHtml('Done', summary.done),
+  ].join('');
+}
+
+function renderPrdSwitcher() {
+  els.prdSwitcher.innerHTML = prds.map((prd) => `<button type="button" class="prd-tab ${prd.id === state.prd ? 'active' : ''}" data-prd="${escapeHtml(prd.id)}">
+    <strong>${escapeHtml(prd.title)}</strong>
+    <span>${prd.summary.total} issues · ${prd.summary.done} done · ${prd.specFiles?.length || 0} specs</span>
+  </button>`).join('');
+  els.prdSwitcher.querySelectorAll('[data-prd]').forEach((button) => button.addEventListener('click', () => setPrd(button.dataset.prd)));
+}
+
+function setPrd(prdId) {
+  if (!validPrdIds.has(prdId)) return;
+  state.prd = prdId;
+  localStorage.setItem('workflow-status-prd', prdId);
+  render();
 }
 
 function optionButton(group, value, label, active) {
   return `<button type="button" class="filter-option ${active ? 'active' : ''}" data-group="${escapeHtml(group)}" data-value="${escapeHtml(value)}">${escapeHtml(label)}</button>`;
 }
 
-function fillFilters() {
-  renderSingleSelect('theme', els.theme, els.themeButton, [
+function renderThemeSelect() {
+  const options = [
     ['default', 'Default'],
     ['dark', 'Dark'],
     ['github', 'GitHub'],
     ['nord', 'Nord'],
     ['solarized', 'Solarized'],
-  ]);
-  renderSingleSelect('priority', els.priority, els.priorityButton, [['all', 'All'], ...uniq(allCards.map((card) => card.priority)).map((value) => [value, value])]);
-  renderSingleSelect('type', els.type, els.typeButton, [['all', 'All'], ...uniq(allCards.map((card) => card.type)).map((value) => [value, value])]);
-  renderSingleSelect('verification', els.verification, els.verificationButton, [['all', 'All'], ...uniq(allCards.map((card) => card.verification)).map((value) => [value, value])]);
-  els.columnFilter.innerHTML = WORKFLOW_DATA.views.focus.map((column) => `<label><input type="checkbox" value="${escapeHtml(column.id)}" ${state.columns.includes(column.id) ? 'checked' : ''} /> ${escapeHtml(column.title)}</label>`).join('');
-  els.columnFilter.querySelectorAll('input[type="checkbox"]').forEach((input) => input.addEventListener('change', updateVisibleColumns));
-  updateColumnFilterLabel();
-}
-
-function renderSingleSelect(group, menu, button, options) {
-  const selected = options.find(([value]) => value === state[group]) || options[0];
-  button.textContent = selected[1];
-  menu.innerHTML = options.map(([value, label]) => optionButton(group, value, label, value === state[group])).join('');
-}
-
-function updateVisibleColumns() {
-  const nextColumns = [...els.columnFilter.querySelectorAll('input[type="checkbox"]:checked')].map((input) => input.value);
-  state.columns = nextColumns.length ? nextColumns : [];
-  localStorage.setItem('workflow-status-columns', JSON.stringify(state.columns));
-  updateColumnFilterLabel();
-  render();
-}
-
-function updateColumnFilterLabel() {
-  const selected = WORKFLOW_DATA.views.focus.filter((column) => state.columns.includes(column.id));
-  els.columnFilterButton.textContent = selected.length === allColumnIds.length ? 'All columns' : `${selected.length} selected`;
+  ];
+  const selected = options.find(([value]) => value === state.theme) || options[0];
+  els.themeButton.textContent = selected[1];
+  els.theme.innerHTML = options.map(([value, label]) => optionButton('theme', value, label, value === state.theme)).join('');
 }
 
 function setMenuOpen(menu, button, open) {
@@ -826,9 +942,7 @@ function setMenuOpen(menu, button, open) {
 }
 
 function closeMenus(exceptMenu = null) {
-  for (const [menu, button] of [[els.theme, els.themeButton], [els.priority, els.priorityButton], [els.type, els.typeButton], [els.verification, els.verificationButton], [els.columnFilter, els.columnFilterButton]]) {
-    if (menu !== exceptMenu) setMenuOpen(menu, button, false);
-  }
+  if (els.theme !== exceptMenu) setMenuOpen(els.theme, els.themeButton, false);
 }
 
 function toggleMenu(menu, button) {
@@ -837,73 +951,8 @@ function toggleMenu(menu, button) {
   setMenuOpen(menu, button, open);
 }
 
-function setNav(value) {
-  state.nav = state.nav === value ? 'all' : value;
-  render();
-}
-
-function navButton(value, label, count, detail = '') {
-  return `<button class="nav-item ${state.nav === value ? 'active' : ''}" data-nav="${escapeHtml(value)}">
-    <span>${escapeHtml(label)}</span><strong>${count}</strong>${detail ? `<small>${escapeHtml(detail)}</small>` : ''}
-  </button>`;
-}
-
-function renderNavigation() {
-  const counts = Object.fromEntries(['blocked', 'todo', 'inProgress', 'review', 'done'].map((status) => [status, allCards.filter((card) => card.status === status).length]));
-  els.executionNav.innerHTML = [
-    navButton('status:blocked', 'Blocked', counts.blocked, 'Resolve bottlenecks first'),
-    navButton('status:todo', 'Todo', counts.todo, 'Ready to execute'),
-    navButton('status:inProgress', 'In Progress', counts.inProgress, 'Currently active'),
-    navButton('status:review', 'Review', counts.review, 'Needs closeout'),
-    navButton('status:done', 'Done', counts.done, 'Completed work'),
-  ].join('');
-
-  els.traceabilityNav.innerHTML = WORKFLOW_DATA.traceabilityGroups.map((group) =>
-    navButton(`group:${group.id}`, group.title, group.issueCount, `${group.doneCount} done · ${group.blockedCount} blocked`)
-  ).join('');
-
-  const health = WORKFLOW_DATA.health;
-  els.healthNav.innerHTML = [
-    navButton('health:verificationMissing', 'Missing verification', health.verificationMissing, 'Done without evidence'),
-    navButton('health:missingDependencies', 'Missing dependencies', health.missingDependencies, 'Broken dependency refs'),
-    navButton('health:blocked', 'All blocked work', health.blocked, 'Blocked by incomplete work'),
-  ].join('');
-
-  document.querySelectorAll('[data-nav]').forEach((button) => button.addEventListener('click', () => setNav(button.dataset.nav)));
-}
-
-function cardMatchesNav(card) {
-  if (state.nav === 'all') return true;
-  const [kind, value] = state.nav.split(':');
-  if (kind === 'status') return card.status === value;
-  if (kind === 'group') {
-    const group = WORKFLOW_DATA.traceabilityGroups.find((item) => item.id === value);
-    return Boolean(group && card.specReferences.some((spec) => group.specCodes.includes(spec.code)));
-  }
-  if (kind === 'health' && value === 'verificationMissing') return card.verification === 'missing';
-  if (kind === 'health' && value === 'missingDependencies') return card.blockedReasons.some((reason) => reason.missing);
-  if (kind === 'health' && value === 'blocked') return card.status === 'blocked';
-  return true;
-}
-
-function filteredCards() {
-  const query = state.query.trim().toLowerCase();
-  return allCards.filter((card) => {
-    if (!state.columns.includes(card.status)) return false;
-    if (state.priority !== 'all' && card.priority !== state.priority) return false;
-    if (state.type !== 'all' && card.type !== state.type) return false;
-    if (state.verification !== 'all' && card.verification !== state.verification) return false;
-    if (!cardMatchesNav(card)) return false;
-    if (query) {
-      const haystack = [card.title, card.file, card.description, card.type, card.priority, card.specReference, card.label].join(' ').toLowerCase();
-      if (!haystack.includes(query)) return false;
-    }
-    return true;
-  });
-}
-
 function activeViewColumns() {
-  return WORKFLOW_DATA.views.focus.filter((column) => state.columns.includes(column.id));
+  return WORKFLOW_DATA.views.focus;
 }
 
 function applyTheme() {
@@ -913,11 +962,13 @@ function applyTheme() {
 
 function render() {
   applyTheme();
-  renderNavigation();
-  const cards = filteredCards();
+  renderThemeSelect();
+  renderSummary();
+  renderPrdSwitcher();
+  const cards = scopedCards();
   const columns = activeViewColumns();
   els.board.style.gridTemplateColumns = `repeat(${Math.max(1, columns.length)}, minmax(260px, 1fr))`;
-  els.board.innerHTML = columns.length ? columns.map((column) => renderColumn(column.title, cards.filter((card) => card.status === column.id))).join('') : '<div class="empty-board">No columns selected</div>';
+  els.board.innerHTML = columns.map((column) => renderColumn(column.title, cards.filter((card) => card.status === column.id))).join('');
   els.board.querySelectorAll('[data-card-key]').forEach((button) => button.addEventListener('click', () => openDrawer(button.dataset.cardKey)));
 }
 
@@ -986,25 +1037,18 @@ function closeDrawer() {
 
 document.querySelector('#closeDrawer').addEventListener('click', closeDrawer);
 els.drawerBackdrop.addEventListener('click', closeDrawer);
-els.search.addEventListener('input', () => { state.query = els.search.value; render(); });
 els.themeButton.addEventListener('click', () => toggleMenu(els.theme, els.themeButton));
-els.priorityButton.addEventListener('click', () => toggleMenu(els.priority, els.priorityButton));
-els.typeButton.addEventListener('click', () => toggleMenu(els.type, els.typeButton));
-els.verificationButton.addEventListener('click', () => toggleMenu(els.verification, els.verificationButton));
-els.columnFilterButton.addEventListener('click', () => toggleMenu(els.columnFilter, els.columnFilterButton));
 document.addEventListener('click', (event) => {
   if (!event.target.closest('.dropdown-filter')) closeMenus();
 });
 document.addEventListener('click', (event) => {
   const option = event.target.closest('.filter-option');
-  if (!option) return;
-  state[option.dataset.group] = option.dataset.value;
+  if (!option || option.dataset.group !== 'theme') return;
+  state.theme = option.dataset.value;
   closeMenus();
-  fillFilters();
   render();
 });
 
-fillFilters();
 render();
 """
 
@@ -1146,19 +1190,33 @@ button { cursor: pointer; }
 .metric { background: var(--panel); padding: 12px 14px; }
 .metric strong { display: block; font-size: 20px; line-height: 1; }
 .metric span { color: var(--muted); font-size: 12px; }
-.toolbar {
-  margin: 12px 24px;
-  padding: 10px;
+.prd-switcher {
+  margin: 12px 24px 0;
+  padding: 12px;
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 8px;
   display: grid;
-  grid-template-columns: minmax(220px, 1.2fr) repeat(3, minmax(130px, 1fr)) minmax(320px, 1.6fr);
-  gap: 8px;
-  align-items: end;
+  grid-template-columns: minmax(220px, 0.6fr) minmax(0, 1.4fr);
+  gap: 12px;
+  align-items: center;
 }
-.toolbar label { display: grid; gap: 4px; color: var(--muted); font-size: 12px; }
-.toolbar input, .dropdown-filter > button {
+.prd-switcher h2 { margin: 0; font-size: 14px; }
+.prd-list { display: flex; gap: 8px; overflow-x: auto; padding-bottom: 2px; }
+.prd-tab {
+  min-width: 220px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--panel-soft);
+  color: var(--text);
+  padding: 9px 10px;
+  text-align: left;
+}
+.prd-tab:hover, .prd-tab.active { background: var(--panel-hover); border-color: var(--blue); }
+.prd-tab.active { box-shadow: inset 0 -3px var(--blue); }
+.prd-tab strong { display: block; margin-bottom: 3px; }
+.prd-tab span { color: var(--muted); font-size: 12px; }
+.dropdown-filter > button {
   width: 100%;
   border: 1px solid var(--border);
   border-radius: 6px;
@@ -1203,42 +1261,19 @@ button { cursor: pointer; }
 .filter-menu label:hover, .filter-option:hover, .filter-option.active { background: var(--panel-soft); }
 .filter-option.active { color: var(--blue); font-weight: 650; }
 .filter-menu input { width: auto; }
-.layout { display: grid; grid-template-columns: 280px minmax(0, 1fr); gap: 12px; padding: 0 24px 24px; }
-.navigator {
-  align-self: start;
-  position: sticky;
-  top: 12px;
-  display: grid;
-  gap: 12px;
-}
-.navigator section, .column {
+.layout { padding: 12px 24px 24px; }
+.column {
   background: var(--panel);
   border: 1px solid var(--border);
   border-radius: 8px;
 }
-.navigator h2, .column h2 {
+.column h2 {
   margin: 0;
   padding: 10px 12px;
   border-bottom: 1px solid var(--soft-border);
   font-size: 13px;
   font-weight: 650;
 }
-.nav-list { display: grid; gap: 1px; background: var(--soft-border); }
-.nav-item {
-  appearance: none;
-  border: 0;
-  background: var(--panel);
-  color: var(--text);
-  padding: 9px 12px;
-  text-align: left;
-  display: grid;
-  grid-template-columns: 1fr auto;
-  gap: 2px 8px;
-}
-.nav-item:hover, .nav-item.active { background: var(--panel-soft); }
-.nav-item.active { box-shadow: inset 3px 0 var(--blue); }
-.nav-item strong { font-size: 12px; color: var(--muted); }
-.nav-item small { grid-column: 1 / -1; color: var(--muted); font-size: 11px; }
 .board { display: grid; gap: 12px; overflow-x: auto; align-items: start; }
 .empty-board { grid-column: 1 / -1; color: var(--muted); background: var(--panel); border: 1px solid var(--border); border-radius: 8px; padding: 24px; }
 .column { min-height: 360px; }
@@ -1312,9 +1347,7 @@ button { cursor: pointer; }
 .danger { color: var(--red); }
 pre { white-space: pre-wrap; word-break: break-word; }
 @media (max-width: 1180px) {
-  .toolbar { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-  .layout { grid-template-columns: 1fr; }
-  .navigator { position: static; }
+  .prd-switcher { grid-template-columns: 1fr; }
 }
 '''
 
